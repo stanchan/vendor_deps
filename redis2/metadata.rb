@@ -1,3 +1,4 @@
+name             "redis2"
 maintainer       "Fewbytes Technologies, Inc."
 maintainer_email "avishai@fewbytes.com"
 license          "Apache 2.0"
