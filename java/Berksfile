@@ -1,0 +1,6 @@
+source "http://api.berkshelf.com"
+
+metadata
+cookbook 'chef_handler', path: '../vendor_deps/chef_handler'
+cookbook 'windows', path: '../windows'
+cookbook 'iis', path: '../vendor_deps/iis'
