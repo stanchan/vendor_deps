@@ -1,8 +1,10 @@
 #
-# Cookbook Name:: openssl
-# Recipe:: default
+# Cookbook Name:: nodejs
+# Resource:: npm
 #
-# Copyright 2009, Opscode, Inc.
+# Author:: Sergey Balbeko <sergey@balbeko.com>
+#
+# Copyright 2012, Sergey Balbeko
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,3 +18,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+actions :install, :uninstall
+default_action :install
+
+attribute :package, :name_attribute => true
+attribute :version, :kind_of => String
+attribute :path, :kind_of => String
+attribute :url, :kind_of => String
+attribute :json, :kind_of => [String, TrueClass]
+attribute :options, :kind_of => Array, :default => []
+
+attribute :user, :kind_of => String
+attribute :group, :kind_of => String

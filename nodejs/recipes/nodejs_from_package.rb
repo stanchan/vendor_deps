@@ -1,8 +1,11 @@
 #
-# Cookbook Name:: openssl
-# Recipe:: default
+# Author:: Nathan L Smith (nlloyds@gmail.com)
+# Author:: Marius Ducea (marius@promethost.com)
+# Cookbook Name:: nodejs
+# Recipe:: package
 #
-# Copyright 2009, Opscode, Inc.
+# Copyright 2012, Cramer Development, Inc.
+# Copyright 2013, Opscale
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,3 +19,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+include_recipe 'nodejs::repo' if node['nodejs']['install_repo']
+
+node['nodejs']['packages'].each do |node_pkg|
+  package node_pkg
+end
