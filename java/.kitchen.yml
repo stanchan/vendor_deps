@@ -1,0 +1,33 @@
+---
+driver:
+  name: vagrant
+
+driver_config:
+  requre_chef_omnibus: true
+  network:
+  - ["forwarded_port", {guest: 8443, host: 8443}]
+  - ["forwarded_port", {guest: 443, host: 443}]
+  - ["private_network", {ip: "172.16.1.13"}]
+  customize:
+    memory: 2048
+    cpus: 2
+
+provisioner:
+  name: chef_zero
+  chef_omnibus_url: http://sl73gsesaapd002.visa.com/chef/install.sh
+  roles_path: '../gse/roles'
+  environments_path: '../gse/environments'
+
+platforms:
+  - name: rhel-6.5
+    driver:
+      box_url: http://sl73cirepoapp01.visa.com/pub/vblock/gsesa/bento/opscode_rhel-6.5_chef-provisionerless.box
+
+suites:
+  - name: default
+    run_list:
+      - recipe[java::default]
+    attributes:
+    provisioner:
+      client_rb:
+
