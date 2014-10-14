@@ -1,0 +1,9 @@
+require "rubygems"
+# Load Chef before Commander, to avoid calls to Mixlib::Config going
+# to Commmander's imports.
+require "chef-ssl/client"
+require "commander/import"
+
+HighLine.colorize_strings
+
+load File.expand_path('../lib/chef-ssl/command.rb', File.dirname(__FILE__))
