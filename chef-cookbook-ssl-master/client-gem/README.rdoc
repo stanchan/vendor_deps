@@ -1,6 +1,0 @@
-=NAME
-
-"chef-ssl" Client
-
-
-
