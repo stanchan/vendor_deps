@@ -1,8 +1,8 @@
 #
-# Cookbook Name:: build-essential
-# Recipe:: freebsd
+# Cookbook Name:: iptables
+# Recipe:: default
 #
-# Copyright 2014, Chef Software, Inc.
+# Copyright 2008-2009, Opscode, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 # limitations under the License.
 #
 
-potentially_at_compile_time do
-  package 'devel/gmake'
-  package 'devel/autoconf'
-  package 'devel/m4'
+package "iptables" 
+service "iptables" do
+      action [ :disable, :stop ]
+      supports :status => true, :start => true, :stop => true, :restart => true
 end
