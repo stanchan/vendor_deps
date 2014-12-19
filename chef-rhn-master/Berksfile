@@ -1,7 +1,0 @@
-source "https://supermarketlab.trusted.visa.com"
-
-metadata
-
-#group :integration do
-#  cookbook 'minitest-handler'
-#end
