@@ -1,3 +1,5 @@
+source "https://supermarketlab.trusted.visa.com"
+
 cookbook '7-zip', path: './7-zip'
 cookbook 'chef-client', path: './chef-client'
 cookbook 'iis', path: './iis'
