@@ -80,6 +80,13 @@ class Chef
         # Chef::Provider::Service overrides
         #
 
+        def action_create
+          converge_by("configure service without enabling #{@new_resource}") do
+            configure_service # Do this every run, even if service is already enabled and running
+            Chef::Log.info("#{@new_resource} configured")
+          end
+        end
+
         def action_enable
           converge_by("configure service #{@new_resource}") do
             configure_service # Do this every run, even if service is already enabled and running
@@ -156,19 +163,23 @@ class Chef
         def enable_service
           Chef::Log.debug("Creating symlink in service_dir for #{new_resource.service_name}")
           service_link.run_action(:create)
-
-          Chef::Log.debug("waiting until named pipe #{service_dir_name}/supervise/ok exists.")
-          until ::FileTest.pipe?("#{service_dir_name}/supervise/ok")
-            sleep 1
-            Chef::Log.debug('.')
-          end
-
-          if new_resource.log
-            Chef::Log.debug("waiting until named pipe #{service_dir_name}/log/supervise/ok exists.")
-            until ::FileTest.pipe?("#{service_dir_name}/log/supervise/ok")
+         
+          unless inside_docker?  
+            Chef::Log.debug("waiting until named pipe #{service_dir_name}/supervise/ok exists.")
+            until ::FileTest.pipe?("#{service_dir_name}/supervise/ok")
               sleep 1
               Chef::Log.debug('.')
             end
+
+            if new_resource.log
+              Chef::Log.debug("waiting until named pipe #{service_dir_name}/log/supervise/ok exists.")
+              until ::FileTest.pipe?("#{service_dir_name}/log/supervise/ok")
+                sleep 1
+                Chef::Log.debug('.')
+              end
+            end
+          else
+              Chef::Log.debug("skipping */supervise/ok check inside docker")
           end
         end
 
@@ -492,6 +503,11 @@ exec svlogd -tt /var/log/#{new_resource.service_name}"
           @service_link = Chef::Resource::Link.new(::File.join(service_dir_name), run_context)
           @service_link.to(sv_dir_name)
           @service_link
+        end
+
+        def inside_docker?
+          results = `cat /proc/1/cgroup`.strip.split("\n")
+          results.any?{|val| /docker/ =~ val}
         end
       end
     end
