@@ -1,4 +1,4 @@
-source https://supermarketlab.trusted.visa.com
+source https://supermarket.trusted.visa.com
 
 cookbook '7-zip', path: './7-zip'
 cookbook 'apache2', path: './apache2'
