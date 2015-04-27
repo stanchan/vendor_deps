@@ -1,0 +1,60 @@
+driver:
+  name: vagrant
+
+provisioner:
+  name: chef_zero
+
+platforms:
+  - name: centos-5.11
+  - name: centos-6.6
+  - name: fedora-21
+  - name: ubuntu-10.04
+    run_list:
+    - recipe[apt]
+  - name: ubuntu-12.04
+    run_list:
+    - recipe[apt]
+  - name: ubuntu-14.04
+    run_list:
+    - recipe[apt]
+  - name: windows-2008R2
+
+suites:
+  #
+  # server22-single
+  #
+  - name: server22-single
+    run_list:
+    - recipe[httpd_service_test::single]
+    includes: [
+      'amazon-2014.03',
+      'debian-7.2',
+      'omnios-151006',
+      'centos-5.11',
+      'centos-6.6',
+      'smartos-13.4.0',
+      'ubuntu-10.04',
+      'ubuntu-12.04',
+    ]
+    attributes:
+      httpd:
+        version: '2.2'
+
+  #
+  # server24-default
+  #
+  - name: server24-single
+    run_list:
+    - recipe[httpd_service_test::single]
+    includes: [
+      'amazon-2014.03',
+      'fedora-21',
+      'smartos-13.4.0',
+      'ubuntu-14.04',
+    ]
+    attributes:
+      httpd:
+        version: '2.4'
+        listen_addresses: [
+          '0.0.0.0'
+        ]
