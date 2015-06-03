@@ -68,7 +68,7 @@ platforms:
   - recipe[apt]
 
 suites:
-  - name: default
+  - name: centos-default
     run_list:
       - recipe[rsyslog::default]
   - name: relp

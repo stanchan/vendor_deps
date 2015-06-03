@@ -49,6 +49,12 @@ This `kitchen init` command will yield a file which looks like this:
 
     suites:
     - name: default
+
+
+
+
+
+
       run_list: ["recipe[certificate::default]"]                                                                                                                                                                                                                      
       attributes: {}
 
@@ -87,6 +93,12 @@ Default generated configuration.
 
     suites:
     - name: default
+
+
+
+
+
+
       run_list: ["recipe[certificate::default]"]
       attributes: {}
 

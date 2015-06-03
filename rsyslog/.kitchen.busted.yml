@@ -62,7 +62,7 @@ platforms:
   - recipe[apt]
 
 suites:
-  - name: default
+  - name: rsyslog
     run_list:
       - recipe[rsyslog::default]
   - name: relp

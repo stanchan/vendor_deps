@@ -5,7 +5,12 @@ driver_config:
   use_sudo: false
 
 provisioner:
-  name: chef_solo
+  name: chef_zero
+  chef_omnibus_url: http://artifactory.trusted.visa.com:8080/visa-file/chef/install.sh
+  roles_path: "test/integration/visa_pipeline/roles"
+  environments_path: "test/integration/visa_pipeline/environments"
+  data_bags_path: "test/integration/visa_pipeline/data_bags"
+
 
 platforms:
   - name: centos-6.4
@@ -14,7 +19,7 @@ platforms:
   - name: debian-7.4
 
 suites:
-  - name: default
+  - name: augeas
     run_list:
       - recipe[augeas::geminstall]
       - recipe[augeas::test]
