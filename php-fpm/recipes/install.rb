@@ -22,7 +22,7 @@ include_recipe 'php-fpm::repository' unless node['php-fpm']['skip_repository_ins
 include_recipe 'apt::default' if node['platform_family'] == 'debian'
 
 if node['php-fpm']['package_name'].nil?
-  if platform_family?("rhel")
+  if platform_family?("rhel", "fedora")
     php_fpm_package_name = "php-fpm"
   else
     php_fpm_package_name = "php5-fpm"
@@ -32,7 +32,8 @@ else
 end
 
 package php_fpm_package_name do
-  action :upgrade
+  action node['php-fpm']['installation_action']
+  version node['php-fpm']['version'] if node['php-fpm']['version']
 end
 
 if node['php-fpm']['service_name'].nil?

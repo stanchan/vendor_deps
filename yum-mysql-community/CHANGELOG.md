@@ -2,6 +2,26 @@ yum-mysql-community Cookbook CHANGELOG
 ======================
 This file is used to list changes made in each version of the yum-mysql-community cookbook.
 
+v0.1.17 (2015-04-06)
+--------------------
+- Updating pubkey link from someara to chef-client github orgs
+
+v0.1.16 (2015-03-25)
+--------------------
+- Adding support Amazon Linux 2015.03 to all channels
+
+v0.1.15 (2015-03-25)
+--------------------
+- Added support for amazon linux 2015.03
+
+v0.1.14 (2015-03-12)
+--------------------
+- The content of 0.1.13 is questionable: didn't have changelog entry, may have had merged attribute change, but let's be clear and say at least this version 0.1.14 is the right thing.
+
+v0.1.13 (2015-03-12)
+--------------------
+- #3 corrected typo in public key attribute
+
 v0.1.12 (2015-01-20)
 -------------------
 - Minor style updates

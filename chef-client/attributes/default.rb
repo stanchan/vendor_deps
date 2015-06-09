@@ -18,8 +18,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'rbconfig'
-
 # We only set these by default because this is what comes from `knife
 # bootstrap` (the best way to install Chef Client on managed nodes).
 #
@@ -52,6 +50,7 @@ default['chef_client']['log_dir']     = '/var/log/chef'
 default['chef_client']['cron'] = {
   'minute' => '0',
   'hour' => '0,4,8,12,16,20',
+  'weekday' => '*',
   'path' => nil,
   'environment_variables' => nil,
   'log_file' => '/dev/null',
@@ -100,7 +99,16 @@ when 'arch'
   default['chef_client']['run_path']    = '/var/run/chef'
   default['chef_client']['cache_path']  = '/var/cache/chef'
   default['chef_client']['backup_path'] = '/var/lib/chef'
-when 'debian', 'suse'
+when 'debian'
+  if node['platform_version'].to_i >= 8 && node.has_key?('init_package') && node['init_package'] == 'systemd'
+    default['chef_client']['init_style'] = 'systemd'
+  else
+    default['chef_client']['init_style'] = 'init'
+  end
+  default['chef_client']['run_path']    = '/var/run/chef'
+  default['chef_client']['cache_path']  = '/var/cache/chef'
+  default['chef_client']['backup_path'] = '/var/lib/chef'
+when 'suse'
   default['chef_client']['init_style']  = 'init'
   default['chef_client']['run_path']    = '/var/run/chef'
   default['chef_client']['cache_path']  = '/var/cache/chef'
@@ -145,6 +153,7 @@ when 'openindiana', 'opensolaris', 'nexentacore', 'solaris2', 'omnios'
   default['chef_client']['method_dir'] = '/lib/svc/method'
   default['chef_client']['bin_dir'] = '/usr/bin'
   default['chef_client']['locale'] = 'en_US.UTF-8'
+  default['chef_client']['env_path'] = '/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin'
 when 'smartos'
   default['chef_client']['init_style']  = 'smf'
   default['chef_client']['run_path']    = '/var/run/chef'
@@ -153,6 +162,7 @@ when 'smartos'
   default['chef_client']['method_dir'] = '/opt/local/lib/svc/method'
   default['chef_client']['bin_dir'] = '/opt/local/bin'
   default['chef_client']['locale'] = 'en_US.UTF-8'
+  default['chef_client']['env_path'] = '/usr/local/sbin:/usr/local/bin:/opt/local/sbin:/opt/local/bin:/usr/sbin:/usr/bin:/sbin'
 when 'windows'
   default['chef_client']['init_style']  = 'windows'
   default['chef_client']['conf_dir']    = 'C:/chef'
@@ -160,7 +170,7 @@ when 'windows'
   default['chef_client']['cache_path']  = "#{node["chef_client"]["conf_dir"]}/cache"
   default['chef_client']['backup_path'] = "#{node["chef_client"]["conf_dir"]}/backup"
   default['chef_client']['log_dir']     = "#{node["chef_client"]["conf_dir"]}/log"
-  default['chef_client']['bin']         = 'C:/chef/chef/bin/chef-client'
+  default['chef_client']['bin']         = 'C:/opscode/chef/bin/chef-client'
 else
   default['chef_client']['init_style']  = 'none'
   default['chef_client']['run_path']    = '/var/run'
@@ -170,9 +180,12 @@ end
 
 # Must appear after init_style to take effect correctly
 default['chef_client']['log_rotation']['options'] = ['compress']
+default['chef_client']['log_rotation']['prerotate'] = nil
 default['chef_client']['log_rotation']['postrotate'] =  case node['chef_client']['init_style']
                                                         when 'systemd'
                                                           'systemctl reload chef-client.service >/dev/null || :'
+                                                        when 'upstart'
+                                                          'initctl reload chef-client >/dev/null || :'
                                                         else
                                                           '/etc/init.d/chef-client reload >/dev/null || :'
                                                         end

@@ -24,20 +24,9 @@ include_recipe 'windows'
 # ::Chef::Recipe.send(:include, Chef::Mixin::PowershellOut)
 ::Chef::Resource::RubyBlock.send(:include, Chef::Mixin::PowershellOut)
 
-if File.exist?('C:\windows\sysnative\cmd.exe')
-  arch = :x86_64
-  cmd = 'C:\windows\sysnative\cmd.exe'
-else
-  arch = nil
-  cmd = 'cmd.exe'
-end
-
-batch 'install chocolatey' do
-  architecture arch
-  interpreter cmd
-  code <<-EOH
-    powershell -noprofile -inputformat none -noninteractive -executionpolicy bypass -command "iex ((new-object net.webclient).DownloadString('#{node['chocolatey']['Uri']}'))"
-  EOH
+powershell_script 'install chocolatey' do
+  code "iex ((new-object net.webclient).DownloadString('#{node['chocolatey']['Uri']}'))"
+  convert_boolean_return true
   not_if { ChocolateyHelpers.chocolatey_installed? }
 end
 

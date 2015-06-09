@@ -1,8 +1,8 @@
 #
-# Author:: Seth Chisamore (<schisamo@opscode.com>)
-# Author:: Lamont Granquist (<lamont@opscode.com>)
+# Author:: Seth Chisamore (<schisamo@chef.io>)
+# Author:: Lamont Granquist (<lamont@chef.io>)
 # Author:: Marco Betti (<m.betti@gmail.com>)
-# Copyright:: Copyright (c) 2011 Opscode, Inc.
+# Copyright:: Copyright (c) 2011 Chef Software, Inc.
 # License:: Apache License, Version 2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,7 +42,7 @@ class Chef
               options += " #{@new_resource.createdb ? 'CREATEDB' : 'NOCREATEDB'}"
               options += " #{@new_resource.createrole ? 'CREATEROLE' : 'NOCREATEROLE'}"
               options += " #{@new_resource.login ? 'LOGIN' : 'NOLOGIN'}"
-              options += " #{@new_resource.replication ? 'REPLICATION' : 'NOREPLICATION'}"
+              options += " #{@new_resource.replication ? 'REPLICATION' : 'NOREPLICATION'}" if keyword?('REPLICATION')
               options += " #{@new_resource.superuser ? 'SUPERUSER' : 'NOSUPERUSER'}"
 
               statement = "CREATE USER \"#{@new_resource.username}\""

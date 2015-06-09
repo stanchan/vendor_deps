@@ -79,6 +79,9 @@ env        = node['chef_client']['cron']['environment_variables']
 log_file   = node['chef_client']['cron']['log_file']
 append_log = node['chef_client']['cron']['append_log'] ? '>>' : '>'
 
+# Use daemon_options in cron.
+client_bin << " #{node["chef_client"]["daemon_options"].join(' ')}" if node["chef_client"]["daemon_options"].any?
+
 # If "use_cron_d" is set to true, delete the cron entry that uses the cron
 # resource built in to Chef and instead use the cron_d LWRP.
 if node['chef_client']['cron']['use_cron_d']
@@ -89,6 +92,7 @@ if node['chef_client']['cron']['use_cron_d']
   cron_d 'chef-client' do
     minute  node['chef_client']['cron']['minute']
     hour    node['chef_client']['cron']['hour']
+    weekday node['chef_client']['cron']['weekday']
     path    node['chef_client']['cron']['path'] if node['chef_client']['cron']['path']
     mailto  node['chef_client']['cron']['mailto'] if node['chef_client']['cron']['mailto']
     user    'root'
@@ -105,6 +109,7 @@ else
   cron 'chef-client' do
     minute  node['chef_client']['cron']['minute']
     hour    node['chef_client']['cron']['hour']
+    weekday node['chef_client']['cron']['weekday']
     path    node['chef_client']['cron']['path'] if node['chef_client']['cron']['path']
     mailto  node['chef_client']['cron']['mailto'] if node['chef_client']['cron']['mailto']
     user    'root'

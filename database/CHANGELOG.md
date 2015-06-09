@@ -1,6 +1,22 @@
 Database cookbook README
 ========================
 
+v4.0.6 (2015-04-29)
+-------------------
+- #126 - Use sql_query property instead of sql in the mysql provider for :query action
+
+v4.0.5 (2015-04-08)
+-------------------
+- #137/#138 - Removing log message containing password information
+
+v4.0.4 (2015-04-07)
+-------------------
+- Using unescaped db name in field value
+
+v4.0.3 (2015-02-22)
+-------------------
+- Unbreak postgresql_database_resource on older versions of PostgreSQL
+
 v4.0.2 (2015-02-09)
 -------------------
 - Removing leftover mysql recipe that installs the mysql2_chef_gem.
@@ -96,23 +112,23 @@ v2.0.0 (2014-02-25)
 v1.6.0
 ------
 ### New Feature
-- **[COOK-4009](https://tickets.opscode.com/browse/COOK-4009)** - Add PostgreSQL SCHEMA management capability
+- **[COOK-4009](https://tickets.chef.io/browse/COOK-4009)** - Add PostgreSQL SCHEMA management capability
 
 ### Improvement
-- **[COOK-3862](https://tickets.opscode.com/browse/COOK-3862)** - Improve database cookbook documentation
+- **[COOK-3862](https://tickets.chef.io/browse/COOK-3862)** - Improve database cookbook documentation
 
 
 v1.5.2
 ------
 ### Improvement
-- **[COOK-3716](https://tickets.opscode.com/browse/COOK-3716)** - Add ALTER SQL Server user roles
+- **[COOK-3716](https://tickets.chef.io/browse/COOK-3716)** - Add ALTER SQL Server user roles
 
 
 v1.5.0
 ------
 ### Improvement
-- **[COOK-3546](https://tickets.opscode.com/browse/COOK-3546)** - Add connection parameters `:socket`
-- **[COOK-1709](https://tickets.opscode.com/browse/COOK-1709)** - Add 'grant_option' parameter
+- **[COOK-3546](https://tickets.chef.io/browse/COOK-3546)** - Add connection parameters `:socket`
+- **[COOK-1709](https://tickets.chef.io/browse/COOK-1709)** - Add 'grant_option' parameter
 
 v1.4.0
 -------
