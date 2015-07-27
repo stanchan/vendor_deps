@@ -10,8 +10,7 @@ Installs/Configures parted
 Requirements
 ============
 
-* Chef 12
-* Ruby 2.1.0/2.2.0
+* Chef 11
 
 Attributes
 ==========
