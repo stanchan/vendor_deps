@@ -1,7 +1,0 @@
-DEPENDENCIES
-  parted
-    path: .
-    metadata: true
-
-GRAPH
-  parted (2.1.2)
