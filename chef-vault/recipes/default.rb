@@ -1,8 +1,10 @@
 #
-# Cookbook Name:: krb5
-# Resource:: keytab
+# Cookbook Name:: chef-vault
+# Recipe:: default
 #
-# Copyright © 2014 Cask Data, Inc.
+# Author: Joshua Timberman <joshua@getchef.com>
+#
+# Copyright (c) 2013, Opscode, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,13 +17,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-actions :create, :delete
-default_action :create
+chef_gem 'chef-vault' do
+  version node['chef-vault']['version']
+  compile_time true if Chef::Resource::ChefGem.instance_methods(false).
+                                               include?(:compile_time)
+  source node['chef-vault']['gem_source'] if node['chef-vault']['gem_source']
+end
 
-attribute :path,       :kind_of => String,         :default => nil,    :name_attribute => true
-attribute :principals, :kind_of => Array,          :default => [],     :required => true
-attribute :owner,      :kind_of => String,         :default => 'root'
-attribute :group,      :kind_of => String,         :default => 'root'
-attribute :mode,       :kind_of => String,         :default => '0600'
+require 'chef-vault'
