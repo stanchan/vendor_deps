@@ -24,9 +24,20 @@ include_recipe 'windows'
 # ::Chef::Recipe.send(:include, Chef::Mixin::PowershellOut)
 ::Chef::Resource::RubyBlock.send(:include, Chef::Mixin::PowershellOut)
 
-powershell_script 'install chocolatey' do
-  code "iex ((new-object net.webclient).DownloadString('#{node['chocolatey']['Uri']}'))"
-  convert_boolean_return true
+# Add ability to download Chocolatey install script behind a proxy
+# This also works if you are not behind a proxy
+command = <<-EOS
+  $wc = New-Object Net.WebClient
+  $wp=[system.net.WebProxy]::GetDefaultProxy()
+  $wp.UseDefaultCredentials=$true
+  $wc.Proxy=$wp
+  Invoke-Expression ($wc.DownloadString('#{node['chocolatey']['Uri']}'))
+EOS
+
+ruby_block 'install chocolatey' do
+  block do
+    powershell_out!(command)
+  end
   not_if { ChocolateyHelpers.chocolatey_installed? }
 end
 

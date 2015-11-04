@@ -1,0 +1,7 @@
+name 'poise'
+version '2.4.0'
+description 'Helpers for writing extensible Chef cookbooks.'
+long_description ''
+maintainer 'YOUR_COMPANY_NAME'
+maintainer_email 'YOUR_EMAIL'
+license 'none'

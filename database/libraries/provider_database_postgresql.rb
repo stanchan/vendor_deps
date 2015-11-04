@@ -41,9 +41,7 @@ class Chef
           unless exists?
             begin
               encoding = @new_resource.encoding
-              if encoding != 'DEFAULT'
-                encoding = "'#{@new_resource.encoding}'"
-              end
+              encoding = "'#{@new_resource.encoding}'" if encoding != 'DEFAULT'
               Chef::Log.debug("#{@new_resource}: Creating database #{new_resource.database_name}")
               create_sql = "CREATE DATABASE \"#{new_resource.database_name}\""
               create_sql += " TEMPLATE = #{new_resource.template}" if new_resource.template
@@ -100,14 +98,15 @@ class Chef
           ret
         end
 
-        # Test if text is psql keyword
-        def keyword?(text)
+        # Verify the postgres server's version number is greater than the integer passed in
+        def version_greater_than?(desired_version_int)
           begin
-            result = db('template1').exec_params('select * from pg_get_keywords() where word = $1', [text.downcase]).num_tuples != 0
+            ret = db('template1').exec('SHOW server_version_num;')
+            server_version_int = ret.getvalue(0, 0).to_i
           ensure
             close
           end
-          result
+          server_version_int > desired_version_int
         end
 
         #
@@ -124,7 +123,7 @@ class Chef
           port = @new_resource.connection[:port] || 5432
           user = @new_resource.connection[:username] || 'postgres'
           Chef::Log.debug("#{@new_resource}: connecting to database #{dbname} on #{host}:#{port} as #{user}")
-          password = @new_resource.connection[:password] || node[:postgresql][:password][:postgres]
+          password = @new_resource.connection[:password] || node['postgresql']['password']['postgres']
           @db = ::PGconn.new(
             host: host,
             port: port,

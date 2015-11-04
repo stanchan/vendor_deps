@@ -2,7 +2,7 @@
 # Cookbook Name:: selinux
 # Provider:: default
 #
-# Copyright 2011, Opscode, Inc.
+# Copyright 2011, Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ end
 def load_current_resource
   @current_resource = Chef::Resource::SelinuxState.new(new_resource.name)
   s = shell_out("getenforce")
-  @current_resource.state(s.stdout.downcase)
+  @current_resource.state(s.stdout.chomp.downcase)
 end
 
 def render_selinux_template(state)
