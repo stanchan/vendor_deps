@@ -29,7 +29,7 @@ configuration of cgroups and storage back ends.
 
 ```
 |--------------+-------+-------+-------|
-|              | 1.6.2 | 1.7.1 | 1.8.2 |
+|              | 1.7.1 | 1.8.2 | 1.9.0 |
 |--------------+-------+-------+-------|
 | debian-8     | X     | X     | X     |
 |--------------+-------+-------+-------|
@@ -350,6 +350,9 @@ the options found in the
 - `bridge` - Attach containers to a network bridge
 - `bip` - Specify network bridge IP
 - `debug` - Enable debug mode
+- `cluster_store` - Cluster store to use
+- `cluster_advertise` - Ip and port that this daemon should advertise to the cluster
+- `cluster_store_opts` - Cluster store options
 - `daemon` - Enable daemon mode
 - `dns` - DNS server(s) to use
 - `dns_search` - DNS search domains to use
@@ -379,13 +382,13 @@ the options found in the
 - `storage_driver` - Storage driver to use
 - `selinux_enabled` - Enable selinux support
 - `storage_opts` - Set storage driver options
-- `tls` - Use TLS; implied by --tlsverify
-- `tls_verify` - Use TLS and verify the remote
-- `tls_ca_cert` - Trust certs signed only by this CA
+- `tls` - Use TLS; implied by --tlsverify. Defaults to ENV['DOCKER_TLS'] if set
+- `tls_verify` - Use TLS and verify the remote. Defaults to ENV['DOCKER_TLS_VERIFY'] if set
+- `tls_ca_cert` - Trust certs signed only by this CA. Defaults to ENV['DOCKER_CERT_PATH'] if set
 - `tls_server_cert` - Path to TLS certificate file for docker service
 - `tls_server_key` - Path to TLS key file for docker service
-- `tls_client_cert` - Path to TLS certificate file for docker cli
-- `tls_client_key` - Path to TLS key file for docker cli
+- `tls_client_cert` - Path to TLS certificate file for docker cli. Defaults to ENV['DOCKER_CERT_PATH'] if set
+- `tls_client_key` - Path to TLS key file for docker cli. Defaults to ENV['DOCKER_CERT_PATH'] if set
 - `default_ulimit` - Set default ulimit settings for containers
 - `http_proxy` - ENV variable set before for Docker daemon starts
 - `https_proxy` - ENV variable set before for Docker daemon starts
@@ -561,7 +564,12 @@ registry vs a private one.
 - `read_timeout` - May need to increase for long image builds/pulls
 - `write_timeout` - May need to increase for long image builds/pulls
 - `host` - A string containing the host the API should communicate with.
-  Defaults to local `docker_service`.
+  Defaults to ENV['DOCKER_HOST'] if set
+- `tls` - Use TLS; implied by --tlsverify. Defaults to ENV['DOCKER_TLS'] if set
+- `tls_verify` - Use TLS and verify the remote. Defaults to ENV['DOCKER_TLS_VERIFY'] if set
+- `tls_ca_cert` - Trust certs signed only by this CA. Defaults to ENV['DOCKER_CERT_PATH'] if set
+- `tls_client_cert` - Path to TLS certificate file for docker cli. Defaults to ENV['DOCKER_CERT_PATH'] if set
+- `tls_client_key` - Path to TLS key file for docker cli. Defaults to ENV['DOCKER_CERT_PATH'] if set
 
 #### Actions
 The following actions are available for a `docker_image` resource.
@@ -1034,7 +1042,7 @@ Most `docker_container` properties are the `snake_case` version of the
 - `force` - A boolean to use in container operations that support a
   `force` option. Defaults to `false`
 - `host` - A string containing the host the API should communicate with.
-  Defaults to local `docker_service`.
+  Defaults to ENV['DOCKER_HOST'] if set
 - `host_name` - The hostname for the container.
 - `labels` A string, array, or hash to set metadata on the container in the form
   ['foo:bar', 'hello:world']`
@@ -1085,6 +1093,11 @@ Most `docker_container` properties are the `snake_case` version of the
 - `write_timeout` - May need to increase for commits or exports that are slow
 - `kill_after` - Number of seconds to wait before killing the container. Defaults
   to wait indefinitely; eventually will hit read_timeout limit.
+- `tls` - Use TLS; implied by --tlsverify. Defaults to ENV['DOCKER_TLS'] if set
+- `tls_verify` - Use TLS and verify the remote. Defaults to ENV['DOCKER_TLS_VERIFY'] if set
+- `tls_ca_cert` - Trust certs signed only by this CA. Defaults to ENV['DOCKER_CERT_PATH'] if set
+- `tls_client_cert` - Path to TLS certificate file for docker cli. Defaults to ENV['DOCKER_CERT_PATH'] if set
+- `tls_client_key` - Path to TLS key file for docker cli. Defaults to ENV['DOCKER_CERT_PATH'] if set
 
 #### Actions
 

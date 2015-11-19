@@ -32,10 +32,10 @@ module DockerCookbook
     property :repo, String, default: lazy { container_name }
     property :tag, String, default: 'latest'
     property :command, ShellCommand
-    property :attach_stderr, Boolean, default: lazy { detach }
-    property :attach_stdin, Boolean, default: false
-    property :attach_stdout, Boolean, default: lazy { detach }
-    property :autoremove, Boolean
+    property :attach_stderr, Boolean, default: lazy { detach }, desired_state: false
+    property :attach_stdin, Boolean, default: false, desired_state: false
+    property :attach_stdout, Boolean, default: lazy { detach }, desired_state: false
+    property :autoremove, Boolean, desired_state: false
     property :binds, ArrayType
     property :cap_add, NonEmptyArray
     property :cap_drop, NonEmptyArray
@@ -52,7 +52,7 @@ module DockerCookbook
     property :extra_hosts, NonEmptyArray
     property :exposed_ports, PartialHashType
     property :force, Boolean
-    property :host, [String, nil], desired_state: false
+    property :host, [String, nil], default: lazy { default_host }
     property :hostname, [String, nil]
     property :labels, [String, Array, Hash], coerce: proc { |v| coerce_labels(v) }
     property :links, [Array, nil], coerce: proc { |v| coerce_links(v) }

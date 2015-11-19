@@ -1,3 +1,43 @@
+v2.2.9
+--------------------
+- #560 - Add cluster-store options to docker daemon
+
+v2.2.8
+--------------------
+- #559 - setting tls and tls_verify should to nil by default
+
+v2.2.7
+--------------------
+- Supporting Docker ENV variables without explicitly setting
+  per-resource host TLS information
+- Serverspec -> inspec fixes
+
+v2.2.6
+--------------------
+- Docker 1.9 support
+- Updates to pull_image id checking
+- Updates default_network_mode calculation
+
+v2.2.5
+--------------------
+- Updating metadata to depend on compat_resource >= 12.5.14
+
+v2.2.4
+--------------------
+- More minor fixes to Upstart script template
+
+v2.2.3
+--------------------
+- Minor fix to Upstart script template
+
+v2.2.2
+--------------------
+- Upstart script now waits for all filesystems instead of just local-filesystems
+
+v2.2.1
+--------------------
+-  marking attach_ properties desired_state: false
+
 v2.2.0
 --------------------
 - Switching docker_installation method to auto
