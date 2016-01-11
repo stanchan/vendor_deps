@@ -1,3 +1,103 @@
+v2.3.19
+--------------------
+switching systemd unit MountFlags from slave to private
+
+v2.3.18
+--------------------
+- removing detach/autoremove conflict check
+
+v2.3.17
+--------------------
+- Reverting gem loading trickery. Reverting to LOAD_PATH.push
+
+v2.3.16
+--------------------
+- Adding validation checking for detach / autoremove property
+  conflicts 
+
+v2.3.15
+--------------------
+- Loading vendored gems the same way chef_gem would.
+- Resolving Chef provisioning conflicts
+
+v2.3.14
+--------------------
+- Supporting Upstart for Linux Mint
+
+v2.3.13
+--------------------
+- Updating compat_resource dep to >=12.5.23
+
+v2.3.12
+--------------------
+- Pinning compat_resource version to 12.5.14 to avoid warning
+
+v2.3.11
+--------------------
+- Using LOAD_PATH.push instead of LOAD_PATH.unshift for vendored gems
+
+v2.3.10
+--------------------
+- Fix method name for pidfile in docker_service_manager_execute
+
+v2.3.9
+--------------------
+- Adding Linux Mint to helpers_installation_package
+
+v2.3.8
+--------------------
+- #582 using symbols in excon opts
+- Resolves 458
+
+v2.3.7
+--------------------
+- #574 - updating docker to 1.9.1
+- #575 - remove nil values from container create hash
+- #576 - updating centos to 7.1
+- #577 - check for conflicting properties
+- #578 - Update docker_container library documentation on timeouts
+- #579 - suggest adding kill_after on a failed action stop
+
+v2.3.6
+--------------------
+- #573 adding support for port range
+
+v2.3.5
+--------------------
+- fixing desired_state on docker_container force property
+
+v2.3.4
+--------------------
+- Fixing up ports logic
+- Supporting multiple ip/ports
+
+v2.3.3
+--------------------
+- vendoring docker-api-1.24.1
+
+v2.3.2
+--------------------
+- vendoring docker-api-1.24.0
+- setting desired_state:false for tls properties
+
+v2.3.1
+--------------------
+- Support for multiple docker_service instances with docker_service_manager_upstart
+- Support for multiple docker_service instances with docker_service_manager_systemd
+  
+v2.3.0
+--------------------
+- Support for multiple docker_service instances with docker_service_manager_sysvinit
+
+v2.2.11
+--------------------
+- Support for multiple docker_service instances with docker_service_manager_execute
+
+v2.2.10
+--------------------
+- #565 - Add support for --exec-opt to docker daemon
+- #566 - Rename cluster-opts to cluster-opt
+
 v2.2.9
 --------------------
 - #560 - Add cluster-store options to docker daemon

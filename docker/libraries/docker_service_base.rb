@@ -1,8 +1,15 @@
 module DockerCookbook
   class DockerServiceBase < DockerBase
+    ################
+    # Helper Methods
+    ################
     require 'docker'
     require 'helpers_service'
     include DockerHelpers::Service
+
+    #####################
+    # resource properties
+    #####################
 
     use_automatic_resource_name
 
@@ -23,6 +30,7 @@ module DockerCookbook
     property :dns, ArrayType
     property :dns_search, [Array, nil]
     property :exec_driver, ['native', 'lxc', nil]
+    property :exec_opts, ArrayType
     property :fixed_cidr, [String, nil]
     property :fixed_cidr_v6, [String, nil]
     property :group, [String, nil]
@@ -42,7 +50,7 @@ module DockerCookbook
     property :log_driver, ['json-file', 'syslog', 'journald', 'gelf', 'fluentd', 'none', nil]
     property :log_opts, ArrayType
     property :mtu, [String, nil]
-    property :pidfile, String, default: '/var/run/docker.pid'
+    property :pidfile, String, default: lazy { "/var/run/#{docker_name}.pid" }
     property :registry_mirror, [String, nil]
     property :storage_driver, ArrayType
     property :selinux_enabled, [Boolean, nil]

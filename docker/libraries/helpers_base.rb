@@ -31,16 +31,6 @@ module DockerCookbook
       # Helper methods
       ################
 
-      def to_port_exposures(ports)
-        return nil if ports.nil?
-        Array(ports).inject({}) { |a, e| a.merge(PortBinding.new(e).exposure) }
-      end
-
-      def to_port_bindings(ports)
-        return nil if ports.nil?
-        Array(ports).inject({}) { |a, e| a.merge(PortBinding.new(e).binding) }
-      end
-
       def api_version
         @api_version ||= Docker.version(connection)['ApiVersion']
       end
@@ -48,8 +38,8 @@ module DockerCookbook
       def connection
         @connection ||= begin
                           opts = {}
-                          opts['read_timeout'] = read_timeout if read_timeout
-                          opts['write_timeout'] = write_timeout if write_timeout
+                          opts[:read_timeout] = read_timeout if read_timeout
+                          opts[:write_timeout] = write_timeout if write_timeout
 
                           if host =~ /^tcp:/
                             opts[:scheme] = 'https' if tls || !tls_verify.nil?
@@ -104,6 +94,14 @@ module DockerCookbook
           "#{ENV['DOCKER_CERT_PATH']}/cert.pem"
         when 'key'
           "#{ENV['DOCKER_CERT_PATH']}/key.pem"
+        end
+      end
+
+      # recursively remove nil values from a hash
+      def compact!(v)
+        v.reject! do |_, value|
+          compact!(value) if value.is_a?(Hash)
+          value.nil?
         end
       end
     end

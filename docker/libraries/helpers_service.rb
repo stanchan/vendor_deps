@@ -31,6 +31,11 @@ module DockerCookbook
         '/usr/bin/docker'
       end
 
+      def docker_name
+        return 'docker' if name == 'default'
+        "docker-#{name}"
+      end
+
       def docker_version
         o = shell_out("#{docker_bin} --version")
         o.stdout.split[2].chomp(',')
@@ -128,11 +133,12 @@ module DockerCookbook
         opts << '--debug' if debug
         opts << "--cluster-advertise=#{cluster_advertise}" if cluster_advertise
         opts << "--cluster-store=#{cluster_store}" if cluster_store
-        cluster_store_opts.each { |store_opt| opts << "--cluster-store-opts=#{store_opt}" } if cluster_store_opts
+        cluster_store_opts.each { |store_opt| opts << "--cluster-store-opt=#{store_opt}" } if cluster_store_opts
         default_ulimit.each { |u| opts << "--default-ulimit=#{u}" } if default_ulimit
         dns.each { |dns| opts << "--dns=#{dns}" } if dns
         dns_search.each { |dns| opts << "--dns-search=#{dns}" } if dns_search
         opts << "--exec-driver=#{exec_driver}" if exec_driver
+        exec_opts.each { |exec_opt| opts << "--exec-opt=#{exec_opt}" } if exec_opts
         opts << "--fixed-cidr=#{fixed_cidr}" if fixed_cidr
         opts << "--fixed-cidr-v6=#{fixed_cidr_v6}" if fixed_cidr_v6
         opts << "--group=#{group}" if group

@@ -1,10 +1,11 @@
 Docker Cookbook
 ===============
-[![Build Status](https://secure.travis-ci.org/someara/chef-docker.png?branch=master)](http://travis-ci.org/someara/chef-docker)
+[![Build Status](https://travis-ci.org/chef-cookbooks/docker.svg?branch=master)](https://travis-ci.org/chef-cookbooks/docker)
+[![Cookbook Version](https://img.shields.io/cookbook/v/docker.svg)](https://supermarket.chef.io/cookbooks/docker)
 [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/someara/chef-docker?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-The Docker Cookbook is a library cookbook that provides resources
-(LWRPs) for use in recipes.
+The Docker Cookbook is a library cookbook that provides custom resources
+for use in recipes.
 
 Scope
 -----
@@ -52,7 +53,7 @@ Cookbook Dependencies
 Usage
 -----
 - Add ```depends 'docker', '~> 2.0'``` to your cookbook's metadata.rb
-- Use resources shipped in cookbook in a recipe, the same way you'd
+- Use the resources shipped in cookbook in a recipe, the same way you'd
   use core Chef resources (file, template, directory, package, etc).
 
 ```ruby
@@ -101,16 +102,19 @@ loading, is out of scope for this cookbook.
 
 Resources Overview
 ------------------
+* `docker_service`: composite resource that uses docker_installation and docker_service_manager
+* `docker_installation`: automatically select an installation method
+* `docker_service_manager`: automatically selects a service manager
+
 * `docker_installation_binary`: copies a pre-compiled docker binary onto disk
 * `docker_installation_script`: curl | bash
 * `docker_installation_package`: package 'docker-engine'
-* `docker_installation`: automatically select a resource
+
 * `docker_service_manager_execute`: manage docker daemon with Chef
 * `docker_service_manager_sysvinit`: manage docker daemon with a sysvinit script
 * `docker_service_manager_upstart`: manage docker daemon with upstart script
 * `docker_service_manager_systemd`: manage docker daemon with systemd unit files
-* `docker_service_manager`: automatically select a resource
-* `docker_service`: composite resource that uses docker_installation and docker_service_manager
+
 * `docker_image`: image/repository operations
 * `docker_container`: container operations
 * `docker_tag`: image tagging operations
@@ -327,10 +331,9 @@ docker_service 'tls_test:2376' do
 end
 ```
 
-WARNING - As of the 1.0 version of this cookbook, `docker_service`
-is a singleton resource. This means that if you create multiple
-`docker_service` resources on the same machine, you will only
-create one actual service and things may not work as expected.
+WARNING - When creating multiple `docker_service` resources on the
+same machine, you will need to specify unique graph properties to
+avoid unexpected behavior and possible data corruption.
 
 #### Properties
 The `docker_service` resource property list mostly corresponds to
@@ -535,7 +538,7 @@ as driven by the
 [Swipley docker-api Ruby gem](https://github.com/swipely/docker-api)
 
 A `docker_image`'s full identifier is a string in the form
-"\<repo\>:\<tag\>". There is some nuance around the naming when the public
+"\<repo\>:\<tag\>". There is some nuance around naming using the public
 registry vs a private one.
 
 - `repo` - aka `image_name` - The first half of a Docker image's
@@ -1057,7 +1060,8 @@ Most `docker_container` properties are the `snake_case` version of the
   disable swap. You must use this with memory and make the swap value
   larger than memory.
 - `network_disabled` - Boolean to disable networking. Defaults to `false`.
-- `network_mode` - Sets the networking mode for the container.
+- `network_mode` - Sets the networking mode for the container. One of `bridge`,
+  `host`, `container`.
 - `open_stdin` - Boolean value, opens stdin. Defaults to `false`.
 - `outfile` - The path to write the file when using `:export` action.
 - `port` - The port configuration to use in the container. Matches the
@@ -1069,7 +1073,7 @@ Most `docker_container` properties are the `snake_case` version of the
 - `remove_volumes` - A boolean to clean up "dangling" volumes when
   removing the last container with a reference to it. Default to
   `false` to match the Docker CLI behavior.
-- `restart_policy` - One of `no`, `on-failure`, or `always`. Use
+- `restart_policy` - One of `no`, `on-failure`, `unless-stopped`, or `always`. Use
   `always` if you want a service container to survive a Dockerhost
   reboot. Defaults to `no`.
 - `restart_maximum_retry_count` - Maximum number of restarts to try
@@ -1093,6 +1097,7 @@ Most `docker_container` properties are the `snake_case` version of the
 - `write_timeout` - May need to increase for commits or exports that are slow
 - `kill_after` - Number of seconds to wait before killing the container. Defaults
   to wait indefinitely; eventually will hit read_timeout limit.
+- `timeout` - Seconds to wait for an attached container to return
 - `tls` - Use TLS; implied by --tlsverify. Defaults to ENV['DOCKER_TLS'] if set
 - `tls_verify` - Use TLS and verify the remote. Defaults to ENV['DOCKER_TLS_VERIFY'] if set
 - `tls_ca_cert` - Trust certs signed only by this CA. Defaults to ENV['DOCKER_CERT_PATH'] if set
@@ -1158,6 +1163,7 @@ Please see contributing information in: [CONTRIBUTING.md](CONTRIBUTING.md)
 * Brian Flad (<bflad417@gmail.com>)
 * Tom Duffield (http://tomduffield.com)
 * Fletcher Nichol (<fnichol@nichol.ca>)
+* Chase Bolt (<chase.bolt@gmail.com>)
 
 ## License
 Licensed under the Apache License, Version 2.0 (the "License");
