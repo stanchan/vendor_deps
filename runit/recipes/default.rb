@@ -42,6 +42,12 @@ when 'rhel', 'fedora'
   packagecloud_repo 'imeyer/runit' unless node['runit']['prefer_local_yum']
   package 'runit'
 
+  if node['platform_version'].to_i == 7
+    service 'runsvdir-start' do
+      action [:start, :enable]
+    end
+  end
+
 when 'debian', 'gentoo'
 
   if platform?('gentoo')
@@ -59,7 +65,7 @@ when 'debian', 'gentoo'
     action :install
     response_file 'runit.seed' if platform?('ubuntu', 'debian')
     notifies value_for_platform(
-      'debian' => { '4.0' => :run, 'default' => :nothing  },
+      'debian' => { '4.0' => :run, 'default' => :nothing },
       'ubuntu' => {
         'default' => :nothing,
         '9.04' => :run,
