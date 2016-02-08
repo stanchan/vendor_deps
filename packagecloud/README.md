@@ -2,6 +2,8 @@
 
 This cookbook provides an LWRP for installing https://packagecloud.io repositories.
 
+NOTE: Please see the Changelog below for important changes if upgrading from 0.0.19 to 0.1.0.
+
 ## Usage
 
 Be sure to depend on `packagecloud` in `metadata.rb` so that the packagecloud
@@ -25,11 +27,22 @@ end
 ```
 
 For packagecloud:enterprise users, add `base_url` to your resource:
+
 ```
 packagecloud_repo "computology/packagecloud-cookbook-test-private" do
   base_url "https://packages.example.com"
   type "deb"
   master_token "762748f7ae0bfdb086dd539575bdc8cffdca78c6a9af0db9"
+end
+```
+
+For forcing the os and dist for repository install:
+
+```
+packagecloud_repo 'computology/packagecloud-cookbook-test-public' do
+  type 'rpm'
+  force_os 'rhel'
+  force_dist '6.5'
 end
 ```
 
@@ -59,6 +72,20 @@ the yum chef cookbook is set to the system default, unless you use the
 `yum_globalconfig` resource to set a custom cachedir. If you do set a custom
 `cachedir`, you should make sure to setup packagecloud repos after that
 resource is set so that the GPG keys end up in the right place.
+
+## Changelog
+
+packagecloud cookbook versions 0.0.19 used an attribute called
+`default['packagecloud']['hostname']` for caching the local machine's hostname
+to avoid regenerating read tokens.
+
+This attribute has been removed as it is confusing and in some edge cases,
+buggy.
+
+Beginning in 0.1.0, you can use
+`default['packagecloud']['hostname_override']` to specify a hostname if ohai
+is unable to determine the hostname of the node on its own.
+
 
 ## Credits
 Computology, LLC.

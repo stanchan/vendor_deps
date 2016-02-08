@@ -101,7 +101,7 @@ def install_rpm
     cookbook 'packagecloud'
     mode '0644'
     variables :base_url        => read_token(base_url).to_s,
-              :gpg_filename  => gpg_filename,
+              :gpg_filename    => gpg_filename,
               :name            => filename,
               :repo_gpgcheck   => 1,
               :description     => filename,
@@ -138,6 +138,7 @@ def install_gem
   end
 end
 
+
 def read_token(repo_url, gems=false)
   return repo_url unless new_resource.master_token
 
@@ -163,19 +164,27 @@ def read_token(repo_url, gems=false)
 end
 
 def install_endpoint_params
-  dist = value_for_platform_family(
+  dist = new_resource.force_dist || value_for_platform_family(
     'debian' => node['lsb']['codename'],
     ['rhel', 'fedora'] => node['platform_version'],
   )
 
-  if node['fqdn'].nil?
-    Chef::Log.fatal("This node's fqdn is set to nil, so a read token cannot be issued!" \
-                    "Please change your fqdn settings.")
+  hostname = node['packagecloud']['hostname_override'] ||
+             node['fqdn'] ||
+             node['hostname']
+
+  if !hostname
+    raise("Can't determine hostname!  Set node['packagecloud']['hostname_override'] " \
+          "if it cannot be automatically determined by Ohai.")
   end
 
-  { :os   => node['platform'],
+  { :os   => os_platform,
     :dist => dist,
-    :name => node['fqdn'] }
+    :name => hostname }
+end
+
+def os_platform
+  new_resource.force_os || node['platform']
 end
 
 def filename
@@ -203,5 +212,5 @@ def construct_uri_with_options(options)
 end
 
 def append_trailing_slash(str)
-  str.end_with?("/") ? str : str << "/"
+  str.end_with?("/") ? str : str + "/"
 end
