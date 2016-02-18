@@ -1,5 +1,5 @@
 #
-# Copyright 2015, Noah Kantrowitz
+# Copyright 2015-2016, Noah Kantrowitz
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,6 +35,17 @@ module PoiseService
         service_resource_hints.include?(:upstart)
       end
 
+      # True restart in Upstart preserves the original config data, we want the
+      # more obvious behavior like everything else in the world that restart
+      # would re-read the updated config file. Use stop+start to get this
+      # behavior. http://manpages.ubuntu.com/manpages/raring/man8/initctl.8.html
+      def action_restart
+        return if options['never_restart']
+        action_stop
+        action_start
+      end
+
+      # Shim out reload if we have a version that predates reload support.
       def action_reload
         return if options['never_reload']
         if !upstart_features[:reload_signal] && new_resource.reload_signal != 'HUP'
