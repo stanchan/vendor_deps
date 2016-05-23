@@ -3,6 +3,15 @@ module DockerCookbook
     module Base
       require 'shellwords'
 
+      # Misc
+      def to_snake_case(name)
+        # ExposedPorts -> _exposed_ports
+        name = name.gsub(/[A-Z]/) { |x| "_#{x.downcase}" }
+        # _exposed_ports -> exposed_ports
+        name = name[1..-1] if name.start_with?('_')
+        name
+      end
+
       ##########
       # coersion
       ##########
@@ -22,8 +31,8 @@ module DockerCookbook
       def coerce_shell_command(v)
         return nil if v.nil?
         return DockerBase::ShellCommandString.new(
-          ::Shellwords.join(v)) if v.is_a?(Array
-                                          )
+          ::Shellwords.join(v)
+        ) if v.is_a?(Array)
         DockerBase::ShellCommandString.new(v)
       end
 
@@ -51,10 +60,10 @@ module DockerCookbook
                         end
       end
 
-      def with_retries(&block)
+      def with_retries(&_block)
         tries = api_retries
         begin
-          block.call
+          yield
           # Only catch errors that can be fixed with retries.
         rescue Docker::Error::ServerError, # 404
                Docker::Error::UnexpectedResponseError, # 400
@@ -86,7 +95,7 @@ module DockerCookbook
       end
 
       def default_tls_cert_path(v)
-        return false unless ENV['DOCKER_CERT_PATH']
+        return nil unless ENV['DOCKER_CERT_PATH']
         case v
         when 'ca'
           "#{ENV['DOCKER_CERT_PATH']}/ca.pem"
@@ -94,14 +103,6 @@ module DockerCookbook
           "#{ENV['DOCKER_CERT_PATH']}/cert.pem"
         when 'key'
           "#{ENV['DOCKER_CERT_PATH']}/key.pem"
-        end
-      end
-
-      # recursively remove nil values from a hash
-      def compact!(v)
-        v.reject! do |_, value|
-          compact!(value) if value.is_a?(Hash)
-          value.nil?
         end
       end
     end

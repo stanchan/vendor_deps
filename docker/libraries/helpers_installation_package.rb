@@ -11,8 +11,13 @@ module DockerCookbook
         false
       end
 
-      def fc21?
-        return true if node['platform'] == 'fedora' && node['platform_version'] == '21'
+      def fedora?
+        return true if node['platform'] == 'fedora'
+        false
+      end
+
+      def wheezy?
+        return true if node['platform'] == 'debian' && node['platform_version'].to_i == 7
         false
       end
 
@@ -42,6 +47,11 @@ module DockerCookbook
         false
       end
 
+      def xenial?
+        return true if node['platform'] == 'ubuntu' && node['platform_version'] == '16.04'
+        false
+      end
+
       def amazon?
         return true if node['platform'] == 'amazon'
       end
@@ -51,19 +61,22 @@ module DockerCookbook
         return "#{v}-1.el6" if el6?
         return "#{v}-1.el7.centos" if el7?
         return "#{v}-1.el6" if amazon?
-        return "#{v}-1.fc21" if fc21?
+        return "#{v}-1.fc#{node['platform_version'].to_i}" if fedora?
+        return "#{v}-0~wheezy" if wheezy?
         return "#{v}-0~jessie" if jesse?
         return "#{v}-0~precise" if precise?
         return "#{v}-0~trusty" if trusty?
         return "#{v}-0~vivid" if vivid?
         return "#{v}-0~wily" if wily?
+        return "#{v}-0~xenial" if xenial?
         v
       end
 
       def default_docker_version
         return '1.7.1' if el6?
         return '1.7.1' if amazon?
-        '1.8.3'
+        return '1.9.1' if vivid?
+        '1.11.1'
       end
 
       def docker_bin

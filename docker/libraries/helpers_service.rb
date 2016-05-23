@@ -65,6 +65,20 @@ module DockerCookbook
         sorted.first
       end
 
+      def connect_socket
+        return "/var/run/#{docker_name}.sock" unless host
+        sorted = coerce_host(host).sort do |a, b|
+          c_a = 1 if a =~ /^unix:/
+          c_a = 2 if a =~ /^fd:/
+          c_a = 3 unless c_a
+          c_b = 1 if b =~ /^unix:/
+          c_b = 2 if b =~ /^fd:/
+          c_b = 3 unless c_b
+          c_a <=> c_b
+        end
+        sorted.first
+      end
+
       def coerce_host(v)
         v = v.split if v.is_a?(String)
         Array(v).each_with_object([]) do |s, r|
@@ -90,6 +104,15 @@ module DockerCookbook
         end
       end
 
+      def coerce_insecure_registry(v)
+        case v
+        when Array, nil
+          v
+        else
+          Array(v)
+        end
+      end
+
       def docker_major_version
         ray = docker_version.split('.')
         ray.pop
@@ -97,7 +120,7 @@ module DockerCookbook
       end
 
       def docker_daemon_arg
-        if docker_major_version.to_f < 1.8
+        if Gem::Version.new(docker_major_version) < Gem::Version.new('1.8')
           '-d'
         else
           'daemon'
@@ -145,7 +168,7 @@ module DockerCookbook
         opts << "--graph=#{graph}" if graph
         host.each { |h| opts << "-H #{h}" } if host
         opts << "--icc=#{icc}" unless icc.nil?
-        opts << "--insecure-registry=#{insecure_registry}" if insecure_registry
+        insecure_registry.each { |i| opts << "--insecure-registry=#{i}" } if insecure_registry
         opts << "--ip=#{ip}" if ip
         opts << "--ip-forward=#{ip_forward}" unless ip_forward.nil?
         opts << "--ip-masq=#{ip_masq}" unless ip_masq.nil?
@@ -167,6 +190,7 @@ module DockerCookbook
         opts << "--tlscert=#{tls_server_cert}" if tls_server_cert
         opts << "--tlskey=#{tls_server_key}" if tls_server_key
         opts << "--userland-proxy=#{userland_proxy}" unless userland_proxy.nil?
+        opts << "--disable-legacy-registry=#{disable_legacy_registry}" unless disable_legacy_registry.nil?
         opts
       end
 

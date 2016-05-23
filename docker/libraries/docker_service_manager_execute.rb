@@ -1,6 +1,6 @@
 module DockerCookbook
   class DockerServiceManagerExecute < DockerServiceBase
-    use_automatic_resource_name
+    resource_name :docker_service_manager_execute
 
     provides :docker_service_manager, os: 'linux'
 
@@ -33,22 +33,9 @@ module DockerCookbook
         action :run
       end
 
-      # loop until docker docker is available
-      bash "docker-wait-ready #{name}" do
-        code <<-EOF
-            timeout=0
-            while [ $timeout -lt 20 ];  do
-              ((timeout++))
-              #{docker_cmd} ps | head -n 1 | grep ^CONTAINER
-                if [ $? -eq 0 ]; then
-                  break
-                fi
-               sleep 1
-            done
-            [[ $timeout -eq 20 ]] && exit 1
-            exit 0
-            EOF
-        not_if "#{docker_cmd} ps | head -n 1 | grep ^CONTAINER"
+      create_docker_wait_ready
+      execute 'docker-wait-ready' do
+        command "#{libexec_dir}/#{docker_name}-wait-ready"
       end
     end
 
