@@ -234,6 +234,27 @@ end
 - `source` - Path to network accessible Docker binary. Ignores version
 - `checksum` - SHA-256
 
+## docker_installation_tarball
+
+The `docker_installation_tarball` resource copies the precompiled Go binary tarball onto the disk. It exists to help run newer Docker versions from 1.11.0 onwards. It should not be used in production, especially with devicemapper.
+
+### Example
+
+```ruby
+docker_installation_tarball 'default' do
+  version '1.11.0'
+  source 'https://my.computers.biz/dist/docker.tgz'
+  checksum '97a3f5924b0b831a310efa8bf0a4c91956cd6387c4a8667d27e2b2dd3da67e4d'
+  action :create
+end
+```
+
+### Properties
+
+- `version` - The desired version of docker. Used to calculate source.
+- `source` - Path to network accessible Docker binary tarball. Ignores version
+- `checksum` - SHA-256
+
 ## docker_installation_script
 
 The `docker_installation_script` resource runs the script hosted by Docker, Inc at <http://get.docker.com>. It configures package repositories and installs a dynamically compiled binary.
@@ -423,6 +444,7 @@ The `docker_service` resource property list mostly corresponds to the options fo
 - `logfile` - Location of Docker daemon log file
 - `userland_proxy`- Enables or disables docker-proxy
 - `disable_legacy_registry` - Do not contact legacy registries
+- `userns_remap` - Enable user namespace remapping options - `default`, `uid`, `uid:gid`, `username`, `username:groupname` (see: [Docker User Namespaces](see: https://docs.docker.com/v1.10/engine/reference/commandline/daemon/#daemon-user-namespace-options))
 
 ### Actions
 
@@ -564,12 +586,10 @@ end
 
 The `docker_image` resource properties mostly corresponds to the [Docker Remote API](https://docs.docker.com/reference/api/docker_remote_api_v1.20/#2-2-images) as driven by the [Swipley docker-api Ruby gem](https://github.com/swipely/docker-api)
 
-A `docker_image`'s full identifier is a string in the form "\
+A `docker_image`'s full identifier is a string in the form "\<repo\>:\<tag\>". There is some nuance around naming using the public
+registry vs a private one.
 
-<repo\>:\<tag\>". There is some nuance around naming using the public
-registry vs a private one.</tag\></repo\>
-
-- `repo` - aka `image_name` - The first half of a Docker image's identity. This is a string in the form: `registry:port/owner/image_name`. If the `registry:port` portion is left off, Docker will implicitly use the Docker public registry. "Official Images" omit the owner part. This means a repo id can look as short as `busybox`, `alpine`, or `centos`, to refer to official images on the public registry, and as long as `my.computers.biz:5043:/what/ever` to refer to custom images on an private registry. Often you'll see something like `someara/chef` to refer to private images on the public registry. - Defaults to resource name.
+- `repo` - aka `image_name` - The first half of a Docker image's identity. This is a string in the form: `registry:port/owner/image_name`. If the `registry:port` portion is left off, Docker will implicitly use the Docker public registry. "Official Images" omit the owner part. This means a repo id can look as short as `busybox`, `alpine`, or `centos`, to refer to official images on the public registry, and as long as `my.computers.biz:5043/what/ever` to refer to custom images on an private registry. Often you'll see something like `someara/chef` to refer to private images on the public registry. - Defaults to resource name.
 - `tag` - The second half of a Docker image's identity. - Defaults to `latest`
 - `source` - Path to input for the `:import`, `:build` and `:build_if_missing` actions. For building, this can be a Dockerfile, a tarball containing a Dockerfile in its root, or a directory containing a Dockerfile. For import, this should be a tarball containing Docker formatted image, as generated with `:save`.
 - `destination` - Path for output from the `:save` action.
@@ -1072,6 +1092,8 @@ Most `docker_container` properties are the `snake_case` version of the `CamelCas
 - `tls_ca_cert` - Trust certs signed only by this CA. Defaults to ENV['DOCKER_CERT_PATH'] if set
 - `tls_client_cert` - Path to TLS certificate file for docker cli. Defaults to ENV['DOCKER_CERT_PATH'] if set
 - `tls_client_key` - Path to TLS key file for docker cli. Defaults to ENV['DOCKER_CERT_PATH'] if set
+- `userns_mode` - Modify the user namespace mode - Defaults to `nil`, example option: `host`
+- `ro_rootfs` - Mount the container's root filesystem as read only. Defaults to `false`
 
 ### Actions
 
