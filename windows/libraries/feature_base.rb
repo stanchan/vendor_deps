@@ -3,12 +3,12 @@ class Chef
     class WindowsFeature
       module Base
         def action_install
-          unless installed?
+          if installed?
+            Chef::Log.debug("#{@new_resource} is already installed - nothing to do")
+          else
             install_feature(@new_resource.feature_name)
             @new_resource.updated_by_last_action(true)
             Chef::Log.info("#{@new_resource} installed feature")
-          else
-            Chef::Log.debug("#{@new_resource} is already installed - nothing to do")
           end
         end
 
@@ -33,23 +33,23 @@ class Chef
         end
 
         def install_feature(_name)
-          fail Chef::Exceptions::UnsupportedAction, "#{self} does not support :install"
+          raise Chef::Exceptions::UnsupportedAction, "#{self} does not support :install"
         end
 
         def remove_feature(_name)
-          fail Chef::Exceptions::UnsupportedAction, "#{self} does not support :remove"
+          raise Chef::Exceptions::UnsupportedAction, "#{self} does not support :remove"
         end
 
         def delete_feature(_name)
-          fail Chef::Exceptions::UnsupportedAction, "#{self} does not support :delete"
+          raise Chef::Exceptions::UnsupportedAction, "#{self} does not support :delete"
         end
 
         def installed?
-          fail Chef::Exceptions::Override, "You must override installed? in #{self}"
+          raise Chef::Exceptions::Override, "You must override installed? in #{self}"
         end
 
         def available?
-          fail Chef::Exceptions::Override, "You must override available? in #{self}"
+          raise Chef::Exceptions::Override, "You must override available? in #{self}"
         end
       end
     end

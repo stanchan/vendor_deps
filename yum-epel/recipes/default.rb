@@ -3,7 +3,7 @@
 # Cookbook Name:: yum-epel
 # Recipe:: default
 #
-# Copyright 2013-2015, Chef Software, Inc.
+# Copyright 2013-2016, Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ node['yum-epel']['repositories'].each do |repo|
     include_config node['yum'][repo]['include_config'] unless node['yum'][repo]['include_config'].nil?
     includepkgs node['yum'][repo]['includepkgs'] unless node['yum'][repo]['includepkgs'].nil?
     keepalive node['yum'][repo]['keepalive'] unless node['yum'][repo]['keepalive'].nil?
+    make_cache node['yum'][repo]['make_cache'] unless node['yum'][repo]['make_cache'].nil?
     max_retries node['yum'][repo]['max_retries'] unless node['yum'][repo]['max_retries'].nil?
     metadata_expire node['yum'][repo]['metadata_expire'] unless node['yum'][repo]['metadata_expire'].nil?
     mirror_expire node['yum'][repo]['mirror_expire'] unless node['yum'][repo]['mirror_expire'].nil?

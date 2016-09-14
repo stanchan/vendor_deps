@@ -41,7 +41,9 @@ class Chef
           end
         end
 
-        %w(rules.v4 rules.v6).each do |svc|
+        rule_files = %w(rules.v4)
+        rule_files << 'rules.v6' if ipv6_enabled?(new_resource)
+        rule_files.each do |svc|
           # must create empty file for service to start
           file "create empty /etc/iptables/#{svc}" do
             path "/etc/iptables/#{svc}"
@@ -52,6 +54,7 @@ class Chef
 
         service 'iptables-persistent' do
           action [:enable, :start]
+          status_command 'true' # iptables-persistent isn't a real service
         end
       end
     end
@@ -66,12 +69,39 @@ class Chef
       new_resource.rules({}) unless new_resource.rules
       ensure_default_rules_exist(node, new_resource)
 
-      %w(iptables ip6tables).each do |iptables_type|
-        if iptables_type == 'ip6tables'
-          iptables_filename = '/etc/iptables/rules.v6'
-        else
-          iptables_filename = '/etc/iptables/rules.v4'
+      # this populates the hash of rules from firewall_rule resources
+      firewall_rules = run_context.resource_collection.select { |item| item.is_a?(Chef::Resource::FirewallRule) }
+      firewall_rules.each do |firewall_rule|
+        next unless firewall_rule.action.include?(:create) && !firewall_rule.should_skip?(:create)
+
+        types = if ipv6_rule?(firewall_rule) # an ip4 specific rule
+                  %w(ip6tables)
+                elsif ipv4_rule?(firewall_rule) # an ip6 specific rule
+                  %w(iptables)
+                else # or not specific
+                  %w(iptables ip6tables)
+                end
+
+        types.each do |iptables_type|
+          # build rules to apply with weight
+          k = build_firewall_rule(node, firewall_rule, iptables_type == 'ip6tables')
+          v = firewall_rule.position
+
+          # unless we're adding them for the first time.... bail out.
+          next if new_resource.rules[iptables_type].key?(k) && new_resource.rules[iptables_type][k] == v
+          new_resource.rules[iptables_type][k] = v
         end
+      end
+
+      rule_files = %w(iptables)
+      rule_files << 'ip6tables' if ipv6_enabled?(new_resource)
+
+      rule_files.each do |iptables_type|
+        iptables_filename = if iptables_type == 'ip6tables'
+                              '/etc/iptables/rules.v6'
+                            else
+                              '/etc/iptables/rules.v4'
+                            end
 
         # ensure a file resource exists with the current iptables rules
         begin
@@ -122,7 +152,9 @@ class Chef
       iptables_flush!(new_resource)
       new_resource.updated_by_last_action(true)
 
-      %w(rules.v4 rules.v6).each do |svc|
+      rule_files = %w(rules.v4)
+      rule_files << 'rules.v6' if ipv6_enabled?(new_resource)
+      rule_files.each do |svc|
         # must create empty file for service to start
         file "create empty /etc/iptables/#{svc}" do
           path "/etc/iptables/#{svc}"

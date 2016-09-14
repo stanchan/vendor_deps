@@ -7,9 +7,11 @@ require 'chef/mixin/shell_out'
 require 'chef/mixin/language'
 class Chef
   class Provider
-    class WindowsCookbookPackage < Chef::Provider::LWRPBase
+    class WindowsCookbookPackage < Chef::Provider::LWRPBase # ~FC058
       include Chef::Mixin::ShellOut
       include Windows::Helper
+
+      use_inline_resources if defined?(use_inline_resources)
 
       # the logic in all action methods mirror that of
       # the Chef::Provider::Package which will make
@@ -114,7 +116,7 @@ class Chef
           end
         end
         Chef::Log.info("Removing #{@new_resource} with uninstall command '#{uninstall_command}'")
-        shell_out!(uninstall_command, { returns: @new_resource.success_codes })
+        shell_out!(uninstall_command, returns: @new_resource.success_codes)
       end
 
       private
@@ -122,9 +124,9 @@ class Chef
       def install_command_template
         case installer_type
         when :msi
-          "msiexec%2$s \"%1$s\"%3$s"
+          'msiexec%2$s "%1$s"%3$s'
         else
-          "start \"\" /wait \"%1$s\"%2$s%3$s & exit %%%%ERRORLEVEL%%%%"
+          'start "" /wait "%1$s"%2$s%3$s & exit %%%%ERRORLEVEL%%%%'
         end
       end
 
@@ -152,7 +154,7 @@ class Chef
             @new_resource.installer_type
           else
             basename = ::File.basename(cached_file(@new_resource.source, @new_resource.checksum))
-            if basename.split('.').last.downcase == 'msi' # Microsoft MSI
+            if basename.split('.').last.casecmp('msi').zero? # Microsoft MSI
               :msi
             else
               # search the binary file for installer type
@@ -169,7 +171,7 @@ class Chef
                 if basename == 'setup.exe'
                   :installshield
                 else
-                  fail Chef::Exceptions::AttributeNotFound, 'installer_type could not be determined, please set manually'
+                  raise Chef::Exceptions::AttributeNotFound, 'installer_type could not be determined, please set manually'
                 end
               end
             end
@@ -211,11 +213,11 @@ class Chef
       self.resource_name = 'windows_package'
       def initialize(*args)
         super
-        if Gem::Version.new(Chef::VERSION) >= Gem::Version.new('12.6.0')
-          @provider = Chef::Provider::Package::Windows
-        else
-          @provider = Chef::Provider::WindowsCookbookPackage
-        end
+        @provider = if Gem::Version.new(Chef::VERSION) >= Gem::Version.new('12.6.0')
+                      Chef::Provider::Package::Windows
+                    else
+                      Chef::Provider::WindowsCookbookPackage
+                    end
 
         Chef::Log.warn <<-EOF
 Please use the package resource available in Chef Client 12.6.

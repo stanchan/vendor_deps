@@ -12,21 +12,36 @@
   <Directory <%= @params[:docroot] %>>
     Options <%= [@params[:directory_options] || 'FollowSymLinks' ].flatten.join ' ' %>
     AllowOverride <%= [@params[:allow_override] || 'None' ].flatten.join ' ' %>
+    <% if node['apache']['version'].to_f >= 2.4 -%>
+    Require all granted
+    <% else -%>
     Order allow,deny
-    allow from all
+    Allow from all
+    <% end -%>
   </Directory>
 
   <Directory />
     Options FollowSymLinks
-    AllowOverride None
+    <% if node['apache']['version'].to_f >= 2.4 -%>
+    Require all denied
+    <% else -%>
+    Allow from none
+    <% end -%>
   </Directory>
 
   <Location /server-status>
     SetHandler server-status
 
+    <% if node['apache']['version'].to_f >= 2.4 -%>
+    <RequireAny>
+      Require ip 127.0.0.1
+      Require ip ::1
+    </RequireAny>
+    <% else -%>
     Order Deny,Allow
     Deny from all
     Allow from 127.0.0.1
+    <% end -%>
   </Location>
 
   LogLevel info
@@ -37,9 +52,13 @@
   DirectoryIndex <%= [@params[:directory_index]].flatten.join ' ' %>
   <% end -%>
 
-  RewriteEngine On
+  <% if node['apache']['version'].to_f >= 2.4 -%>
+  LogLevel info rewrite:trace1
+  <% else -%>
+  LogLevel info
   RewriteLog <%= node['apache']['log_dir'] %>/<%= @application_name %>-rewrite.log
   RewriteLogLevel 0
+  <% end -%>
 
   # Canonical host, <%= @params[:server_name] %>
   RewriteCond %{HTTP_HOST} !^<%= @params[:server_name] %> [NC]
@@ -50,28 +69,12 @@
   RewriteCond %{SCRIPT_FILENAME} !maintenance.html
   RewriteRule ^.*$ /system/maintenance.html [L]
 
-  # ----------------- #
-  # SSL Configuration #
-  # ----------------- #
+  <%= render 'apache.erb', cookbook: 'ssl_certificate', variables: @params.merge(node: node) %>
 
-  SSLEngine on
-
-  SSLCertificateFile    <%= @params[:ssl_cert] %>
-  SSLCertificateKeyFile <%= @params[:ssl_key] %>
-
-  BrowserMatch "MSIE [2-6]" \
-    nokeepalive ssl-unclean-shutdown \
-    downgrade-1.0 force-response-1.0
-  # MSIE 7 and newer should be able to use keepalive
-  BrowserMatch "MSIE [17-9]" ssl-unclean-shutdown
-
-  # Accept strong encryption only
-  SSLCipherSuite ALL:!aNULL:!ADH:!eNULL:!LOW:!EXP:RC4+RSA:+HIGH:+MEDIUM
-
-<% if @params[:extra_directives].kind_of?(Hash)
-     @params[:extra_directives].each do |name, value|
--%>
-  <%= name.to_s %> <%= value.to_s %>
-<%   end
-   end -%>
+  <% if @params[:extra_directives].kind_of?(Hash)
+       @params[:extra_directives].each do |name, value|
+  -%>
+  <%=    name.to_s %> <%= value.to_s %>
+  <%   end
+     end -%>
 </VirtualHost>

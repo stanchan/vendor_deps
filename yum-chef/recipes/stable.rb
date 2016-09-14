@@ -3,7 +3,7 @@
 # Recipe:: stable
 #
 # Author:: Joshua Timberman <joshua@chef.io>
-# Copyright (c) 2015, Chef Software, Inc. <legal@chef.io>
+# Copyright (c) 2016, Chef Software, Inc. <legal@chef.io>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,14 +19,14 @@
 #
 
 yum_repository 'chef-stable' do
-  description 'Chef chef-stable repository'
-  baseurl "https://packagecloud.io/chef/stable/el/#{node['platform_version'].split('.').first}/$basearch"
+  description 'Chef Software Inc stable channel'
+  baseurl "https://packages.chef.io/stable-yum/el/#{node['platform_version'].split('.').first}/$basearch"
   gpgkey node['yum-chef']['gpgkey']
   sslcacert node['yum-chef']['sslcacert']
   proxy node['yum-chef']['proxy']
   proxy_username node['yum-chef']['proxy_username']
   proxy_password node['yum-chef']['proxy_password']
-  sslverify true
-  gpgcheck true
+  sslverify node['yum-chef']['sslverify']
+  gpgcheck node['yum-chef']['gpgcheck']
   action :create
 end

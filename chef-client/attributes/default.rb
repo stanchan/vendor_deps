@@ -4,7 +4,7 @@
 # Cookbook Name:: chef-client
 # Attributes:: default
 #
-# Copyright 2008-2015, Chef Software, Inc.
+# Copyright 2008-2016, Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -26,12 +26,11 @@
 default['chef_client']['config'] = {
   'chef_server_url' => Chef::Config[:chef_server_url],
   'validation_client_name' => Chef::Config[:validation_client_name],
-  'environment' => Chef::Config[:environment] == '_default' ? false : Chef::Config[:environment],
   'node_name' => Chef::Config[:node_name] == node['fqdn'] ? false : Chef::Config[:node_name],
   'verify_api_cert' => true
 }
 
-if Chef::Config.has_key?(:client_fork)
+if Chef::Config.key?(:client_fork)
   default['chef_client']['config']['client_fork'] = true
 end
 
@@ -46,6 +45,9 @@ default['chef_client']['bin']         = '/usr/bin/chef-client'
 # platforms below.
 default['chef_client']['log_dir']     = '/var/log/chef'
 
+# If log file is used, default permissions so everyone can read
+default['chef_client']['log_perm'] = 00640
+
 # Configuration for chef-client::cron recipe.
 default['chef_client']['cron'] = {
   'minute' => '0',
@@ -56,14 +58,14 @@ default['chef_client']['cron'] = {
   'log_file' => '/dev/null',
   'append_log' => false,
   'use_cron_d' => false,
-  'mailto' => nil,
+  'mailto' => nil
 }
 
 # Configuration for Windows scheduled task
 default['chef_client']['task']['frequency'] = 'minute'
 default['chef_client']['task']['frequency_modifier'] = node['chef_client']['interval'].to_i / 60
 default['chef_client']['task']['user'] = 'SYSTEM'
-default['chef_client']['task']['password'] = '' # SYSTEM user does not need a password, but windows_task LWRP wants one
+default['chef_client']['task']['password'] = nil # Password is only required for none system users
 
 default['chef_client']['load_gems'] = {}
 
@@ -100,33 +102,33 @@ when 'arch'
   default['chef_client']['cache_path']  = '/var/cache/chef'
   default['chef_client']['backup_path'] = '/var/lib/chef'
 when 'debian'
-  if node['platform_version'].to_i >= 8 && node.has_key?('init_package') && node['init_package'] == 'systemd'
-    default['chef_client']['init_style'] = 'systemd'
-  else
-    default['chef_client']['init_style'] = 'init'
-  end
+  default['chef_client']['init_style'] = if node['platform_version'].to_i >= 8 && node.key?('init_package') && node['init_package'] == 'systemd'
+                                           'systemd'
+                                         else
+                                           'init'
+                                         end
   default['chef_client']['run_path']    = '/var/run/chef'
   default['chef_client']['cache_path']  = '/var/cache/chef'
   default['chef_client']['backup_path'] = '/var/lib/chef'
 when 'suse'
-  default['chef_client']['init_style']  = 'init'
+  default['chef_client']['init_style']  = 'systemd'
   default['chef_client']['run_path']    = '/var/run/chef'
   default['chef_client']['cache_path']  = '/var/cache/chef'
   default['chef_client']['backup_path'] = '/var/lib/chef'
 when 'rhel'
-  if node['platform_version'].to_i >= 7 && node['platform'] != 'amazon'
-    default['chef_client']['init_style'] = 'systemd'
-  else
-    default['chef_client']['init_style'] = 'init'
-  end
+  default['chef_client']['init_style'] = if node['platform_version'].to_i >= 7 && node['platform'] != 'amazon'
+                                           'systemd'
+                                         else
+                                           'init'
+                                         end
   default['chef_client']['run_path']    = '/var/run/chef'
   default['chef_client']['cache_path']  = '/var/cache/chef'
   default['chef_client']['backup_path'] = '/var/lib/chef'
 when 'fedora'
-  default["chef_client"]["init_style"]  = 'systemd'
-  default["chef_client"]["run_path"]    = '/var/run/chef'
-  default["chef_client"]["cache_path"]  = '/var/cache/chef'
-  default["chef_client"]["backup_path"] = '/var/lib/chef'
+  default['chef_client']['init_style']  = 'systemd'
+  default['chef_client']['run_path']    = '/var/run/chef'
+  default['chef_client']['cache_path']  = '/var/cache/chef'
+  default['chef_client']['backup_path'] = '/var/lib/chef'
 when 'openbsd', 'freebsd'
   default['chef_client']['init_style']  = 'bsd'
   default['chef_client']['run_path']    = '/var/run'
@@ -166,10 +168,10 @@ when 'smartos'
 when 'windows'
   default['chef_client']['init_style']  = 'windows'
   default['chef_client']['conf_dir']    = 'C:/chef'
-  default['chef_client']['run_path']    = "#{node["chef_client"]["conf_dir"]}/run"
-  default['chef_client']['cache_path']  = "#{node["chef_client"]["conf_dir"]}/cache"
-  default['chef_client']['backup_path'] = "#{node["chef_client"]["conf_dir"]}/backup"
-  default['chef_client']['log_dir']     = "#{node["chef_client"]["conf_dir"]}/log"
+  default['chef_client']['run_path']    = "#{node['chef_client']['conf_dir']}/run"
+  default['chef_client']['cache_path']  = "#{node['chef_client']['conf_dir']}/cache"
+  default['chef_client']['backup_path'] = "#{node['chef_client']['conf_dir']}/backup"
+  default['chef_client']['log_dir']     = "#{node['chef_client']['conf_dir']}/log"
   default['chef_client']['bin']         = 'C:/opscode/chef/bin/chef-client'
 else
   default['chef_client']['init_style']  = 'none'

@@ -1,5 +1,25 @@
 # Changelog
 
+## v2.7.1
+
+* Minor tweak for compatability with Chef master.
+
+## v2.7.0
+
+* More compatibility improvements for Chef 12.9.
+* New helper: `Poise::Helpers::Win32User` to automatically convert `'root'`
+  defaults for user and group properties to more platform-appropriate values.
+* Enhanced `poise_shell_out` to better cope with Windows command parsing. Use
+  Bash-style commands and it will automatically convert.
+* Overall compatibility fixes for Windows.
+
+## v2.6.1
+
+* Compatibility with Chef master to fix issues with `defined_in!` not ignoring
+  stack frames from Chef code.
+* Setting a provider in a inversion options resource now works as (probably)
+  expected.
+
 ## v2.6.0
 
 * New backwards-compatibility helper: `Poise::Backports::VERIFY_PATH`. Use it

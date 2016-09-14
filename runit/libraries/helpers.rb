@@ -3,8 +3,8 @@
 # Libraries:: helpers
 #
 # Author: Joshua Timberman <joshua@chef.io>
-# Author: Sean OMeara <sean@chef.io>
-# Copyright 2008-2015, Chef Software, Inc. <legal@chef.io>
+# Author: Sean OMeara <sean@sean.io>
+# Copyright 2008-2016, Chef Software, Inc. <legal@chef.io>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,12 +49,6 @@ module RunitCookbook
       '/etc/init.d'
     end
 
-    # misc helper functions
-    def inside_docker?
-      results = `cat /proc/1/cgroup`.strip.split("\n")
-      results.any? { |val| /docker/ =~ val }
-    end
-
     def down_file
       "#{sv_dir_name}/down"
     end
@@ -82,12 +76,10 @@ module RunitCookbook
     end
 
     def wait_for_service
-      unless inside_docker?
-        sleep 1 until ::FileTest.pipe?("#{service_dir_name}/supervise/ok")
+      sleep 1 until ::FileTest.pipe?("#{service_dir_name}/supervise/ok")
 
-        if new_resource.log
-          sleep 1 until ::FileTest.pipe?("#{service_dir_name}/log/supervise/ok")
-        end
+      if new_resource.log
+        sleep 1 until ::FileTest.pipe?("#{service_dir_name}/log/supervise/ok")
       end
     end
 

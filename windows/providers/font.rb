@@ -17,6 +17,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+use_inline_resources if defined?(use_inline_resources)
+
 include Windows::Helper
 
 def load_current_resource
@@ -38,11 +40,19 @@ end
 
 def get_cookbook_font
   font_file = @new_resource.file
-  cookbook_file font_file do
-    action    :nothing
-    cookbook  cookbook_name.to_s unless cookbook_name.nil?
-    path      win_friendly_path(::File.join(ENV['TEMP'], font_file))
-  end.run_action(:create)
+  if @new_resource.source
+    remote_file font_file do
+      action  :nothing
+      source  "file://#{new_resource.source}"
+      path    win_friendly_path(::File.join(ENV['TEMP'], font_file))
+    end.run_action(:create)
+  else
+    cookbook_file font_file do
+      action    :nothing
+      cookbook  cookbook_name.to_s unless cookbook_name.nil?
+      path      win_friendly_path(::File.join(ENV['TEMP'], font_file))
+    end.run_action(:create)
+  end
 end
 
 def del_cookbook_font
@@ -59,14 +69,14 @@ def install_font
   Chef::Log.debug("Installing font: #{@new_resource.file}")
 end
 
-def action_install
-  unless font_exists?
+action :install do
+  if font_exists?
+    Chef::Log.debug("Not installing font: #{@new_resource.file}, font already installed.")
+    new_resource.updated_by_last_action(false)
+  else
     get_cookbook_font
     install_font
     del_cookbook_font
     new_resource.updated_by_last_action(true)
-  else
-    Chef::Log.debug("Not installing font: #{@new_resource.file}, font already installed.")
-    new_resource.updated_by_last_action(false)
   end
 end

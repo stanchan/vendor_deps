@@ -5,7 +5,7 @@
 # Cookbook Name:: chef-client
 # Recipe:: config
 #
-# Copyright 2008-2013, Chef Software, Inc
+# Copyright 2008-2016, Chef Software, Inc.
 # Copyright 2009, 37signals
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,9 +27,9 @@ end
 
 # chef_node_name = Chef::Config[:node_name] == node['fqdn'] ? false : Chef::Config[:node_name]
 
-if node['chef_client']['log_file'].is_a? String and node['chef_client']['init_style'] != 'runit'
+if node['chef_client']['log_file'].is_a?(String) && node['chef_client']['init_style'] != 'runit'
   log_path = File.join(node['chef_client']['log_dir'], node['chef_client']['log_file'])
-  node.default['chef_client']['config']['log_location'] = "'#{log_path}'"
+  node.default['chef_client']['config']['log_location'] = log_path
 
   case node['platform_family']
   when 'rhel', 'debian', 'fedora'
@@ -50,9 +50,9 @@ end
 # libraries/helpers.rb method to DRY directory creation resources
 create_directories
 
-if log_path != 'STDOUT' #~FC023
+if log_path != 'STDOUT' # ~FC023
   file log_path do
-    mode 00640
+    mode node['chef_client']['log_perm']
   end
 end
 
@@ -60,10 +60,14 @@ chef_requires = []
 node['chef_client']['load_gems'].each do |gem_name, gem_info_hash|
   gem_info_hash ||= {}
   chef_gem gem_name do
+    compile_time true if Chef::Resource::ChefGem.method_defined?(:compile_time)
     action gem_info_hash[:action] || :install
     source gem_info_hash[:source] if gem_info_hash[:source]
     version gem_info_hash[:version] if gem_info_hash[:version]
-    options ( gem_info_hash[:options] ) if gem_info_hash[:options]
+    options gem_info_hash[:options] if gem_info_hash[:options]
+    retries gem_info_hash[:retries] if gem_info_hash[:retries]
+    retry_delay gem_info_hash[:retry_delay] if gem_info_hash[:retry_delay]
+    timeout gem_info_hash[:timeout] if gem_info_hash[:timeout]
   end
   chef_requires.push(gem_info_hash[:require_name] || gem_name)
 end
@@ -71,20 +75,20 @@ end
 # We need to set these local variables because the methods aren't
 # available in the Chef::Resource scope
 d_owner = root_owner
-d_group = node['root_group']
 
-template "#{node["chef_client"]["conf_dir"]}/client.rb" do
+template "#{node['chef_client']['conf_dir']}/client.rb" do
   source 'client.rb.erb'
   owner d_owner
-  group d_group
+  group node['root_group']
   mode 00644
   variables(
-    :chef_config => node['chef_client']['config'],
-    :chef_requires => chef_requires,
-    :ohai_disabled_plugins => node['ohai']['disabled_plugins'],
-    :start_handlers => node['chef_client']['config']['start_handlers'],
-    :report_handlers => node['chef_client']['config']['report_handlers'],
-    :exception_handlers => node['chef_client']['config']['exception_handlers']
+    chef_config: node['chef_client']['config'],
+    chef_requires: chef_requires,
+    ohai_disabled_plugins: node['ohai']['disabled_plugins'],
+    ohai_new_config_syntax: Gem::Requirement.new('>= 8.6.0').satisfied_by?(Gem::Version.new(Ohai::VERSION)),
+    start_handlers: node['chef_client']['config']['start_handlers'],
+    report_handlers: node['chef_client']['config']['report_handlers'],
+    exception_handlers: node['chef_client']['config']['exception_handlers']
   )
 
   if node['chef_client']['reload_config']
@@ -95,13 +99,13 @@ end
 directory ::File.join(node['chef_client']['conf_dir'], 'client.d') do
   recursive true
   owner d_owner
-  group d_group
+  group node['root_group']
   mode 00755
 end
 
 ruby_block 'reload_client_config' do
   block do
-    Chef::Config.from_file("#{node["chef_client"]["conf_dir"]}/client.rb")
+    Chef::Config.from_file("#{node['chef_client']['conf_dir']}/client.rb")
   end
   action :nothing
 end

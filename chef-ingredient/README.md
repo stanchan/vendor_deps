@@ -1,5 +1,7 @@
 # chef-ingredient Cookbook
 
+[![Build Status](https://travis-ci.org/chef-cookbooks/chef-ingredient.svg?branch=master)](https://travis-ci.org/chef-cookbooks/chef-ingredient) [![Cookbook Version](https://img.shields.io/cookbook/v/chef-ingredient.svg)](https://supermarket.chef.io/cookbooks/chef-ingredient)
+
 This cookbook provides primitives - helpers and resources - to manage Chef Software, Inc.'s products and add-ons including, but not limited to:
 
 - Chef Server 12
@@ -16,19 +18,19 @@ This cookbook is maintained and supported by Chef's engineering services team. T
 
 ## Requirements
 
-Chef version 12.5.0 or higher, latest/current version is always recommended.
+### Platforms
 
-For local development, you need ChefDK 0.9.0 or newer.
+- Ubuntu 12.04, 14.04, 16.04
+- CentOS 6, 7
+
+### Chef
+
+- Chef 12.1+
 
 ### Cookbooks
 
-- apt-chef
-- yum-chef
+- compat_resource
 
-### Platform
-
-- Ubuntu 12.04, 14.04
-- CentOS 6, 7
 
 ## Resources
 
@@ -42,7 +44,7 @@ This may be removed in a future version.
 
 A "chef ingredient" is the core package itself, or products or add-on components published by Chef Software, Inc. This resource manages the installation, configuration, and running the `ctl reconfigure` of individual packages.
 
-By default, `chef_ingredient` will install using Chef's public package repositories with the `yum-chef` and `apt-chef` cookbooks depending on the platform. However, it can be configured to use a custom repository by setting the `node['chef-ingredient']['custom-repo-recipe']` attribute (nil by default).
+By default, `chef_ingredient` will install using the `packages.chef.io` stable repository depending on the platform. However, it can be configured to use a custom repository by setting the `node['chef-ingredient']['custom-repo-recipe']` attribute (nil by default).
 
 #### Actions
 
@@ -58,9 +60,10 @@ By default, `chef_ingredient` will install using Chef's public package repositor
 - `ctl_command`: The "ctl" command, e.g., `chef-server-ctl`. This should be automatically detected by the library helper method `chef_ctl_command`, but may need to be specified if something changes, like a new add-on is made available.
 - `options`: Options passed to the `package` resource used for installation.
 - `version`: Package version to install. Can be specified in various semver-alike ways: `12.0.4`, `12.0.3-rc.3`, and also `:latest`/`'latest'`. Do not use this property when specifying `package_source`. Default is `:latest`, which will install the latest package from the repository.
-- `channel`: Channel to install the products from. It can be `:stable` (default) or `:current`.
+- `channel`: Channel to install the products from. It can be `:stable` (default), `:current` or `:unstable`.
 - `package_source`: Full path to a location where the package is located. If present, this file is used for installing the package. Default `nil`.
 - `timeout`: The amount of time (in seconds) to wait to fetch the installer before timing out. Default: default timeout of the Chef package resource - `900` seconds.
+- `accept_license`: A boolean value that specifies if license should be accepted if it is asked for during `reconfigure`action. This option is applicable to only these products: manage, analytics, reporting and compliance. Default: `false`.
 
 ### omnibus_service
 
@@ -72,7 +75,7 @@ This delegates to the ctl command the service management command specified in th
 
 #### Properties
 
-- `ctl_command`: The "ctl" command, e.g. `chef-server-ctl`. This should be automatically detected by the library helper method `chef_ctl_command`, but may need to be specified if something changes, like a  new add-on is made available.
+- `ctl_command`: The "ctl" command, e.g. `chef-server-ctl`. This should be automatically detected by the library helper method `chef_ctl_command`, but may need to be specified if something changes, like a new add-on is made available.
 - `service_name`: (name attribute) The name of the service to manage. Specify this like `product_name/service`, for example, `chef-server/rabbitmq`.
 
 ### ingredient_config
@@ -82,9 +85,10 @@ Makes it easy to create update configuration files of each Chef product. It uses
 #### Actions
 
 - `render` - (default) Creates the configuration file using the options passed in via `add` action or `config` attribute of `chef_ingredient` resource.
-- `add` - Adds the `config` attribute contents to the data collection.  Must run `:render` action to generate the file.
+- `add` - Adds the `config` attribute contents to the data collection. Must run `:render` action to generate the file.
 
 #### Properties
+
 - `product_name`: (name attribute) The product name. See the [PRODUCT_MATRIX.md](https://github.com/chef/mixlib-install/blob/master/PRODUCT_MATRIX.md). For example, `chef-server`, `analytics`, `delivery`, `manage`, etc.
 - `sensitive`: (default `false`) Set to mask the config contents in logs. Use when you config contains information like passwords or secrets.
 - `config`: String content that will be added to the configuration file of the given product.
@@ -119,7 +123,6 @@ end
 ingredient_config "chef-server" do
   notifies :reconfigure, "chef_ingredient[chef-server]"
 end
-
 ```
 
 To install or upgrade lastest version of Chef Client on your nodes:
@@ -143,23 +146,25 @@ chef_ingredient 'analytics' do
   channel :current
   action :install
 end
-
 ```
 
-## License and Author
+## License & Authors
 
-- Author: Joshua Timberman <joshua@chef.io>
-- Author: Serdar Sutay <serdar@chef.io>
-- Copyright (C) 2014-2015, Chef Software Inc. <legal@chef.io>
+- Author: Joshua Timberman [joshua@chef.io](mailto:joshua@chef.io)
+- Author: Serdar Sutay [serdar@chef.io](mailto:serdar@chef.io)
+- Copyright (C) 2014-2016, Chef Software Inc. [legal@chef.io](mailto:legal@chef.io)
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
+```text
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
     http://www.apache.org/licenses/LICENSE-2.0
 
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```

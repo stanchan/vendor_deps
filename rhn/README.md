@@ -1,5 +1,9 @@
 # chef-rhn [![Build Status](https://secure.travis-ci.org/bflad/chef-rhn.png?branch=master)](http://travis-ci.org/bflad/chef-rhn)
 
+Redhat is in the process of transitioning their hosted managment from RHN to RHSM (https://access.redhat.com/rhn-to-rhsm) this cook books focus is on configuring clients of the RHN product (rhn.redhat.com, redhat satellite 5.x, and spacewalk).  On December 9th, 2015, Chef announced a new `redhat_subscription_manager` cookbook for configuring clients of their RHSM products (satellite 6.x, katello, SAM, etc). Please see their blog post for more information!
+
+https://www.chef.io/blog/2015/12/09/managing-red-hat-subscriptions-with-chef-2/
+
 ## Description
 
 Registers node with Red Hat Network (rhn.redhat.com or RHN Satellite) and configures client.
@@ -12,6 +16,7 @@ Active RHN system entitlement for node.
 
 * RHEL 5
 * RHEL 6
+* RHEL 7
 
 ### Cookbooks
 

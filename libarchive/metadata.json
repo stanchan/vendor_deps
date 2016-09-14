@@ -13,8 +13,8 @@
     "mac_os_x": ">= 0.0.0"
   },
   "dependencies": {
-    "apt": "~> 2.5",
-    "yum-epel": "~> 0.6"
+    "apt": ">= 2.5",
+    "yum-epel": "~> 1.0"
   },
   "recommendations": {
 
@@ -40,7 +40,8 @@
   "recipes": {
 
   },
-  "version": "0.6.1",
+  "version": "0.6.2",
   "source_url": "",
-  "issues_url": ""
+  "issues_url": "",
+  "privacy": false
 }

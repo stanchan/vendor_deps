@@ -3,7 +3,7 @@
 # Recipe:: default
 #
 # Author:: Joshua Timberman <joshua@chef.io>
-# Copyright (c) 2015, Chef Software, Inc. <legal@chef.io>
+# Copyright (c) 2015-2016, Chef Software, Inc. <legal@chef.io>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@
 #
 
 yum_repository node['yum-chef']['repositoryid'] do
-  description "Chef #{node['yum-chef']['repositoryid']} repository"
+  description "Chef Software Inc #{node['yum-chef']['repositoryid']} repository"
   node['yum-chef'].each_pair do |opt, val|
     next if opt == 'repositoryid'
     send(opt.to_sym, val) unless val.nil?
   end
-  sslverify true
-  gpgcheck true
+  sslverify node['yum-chef']['sslverify']
+  gpgcheck node['yum-chef']['gpgcheck']
   action :create
 end

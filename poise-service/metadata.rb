@@ -1,9 +1,11 @@
 name 'poise-service'
-version '1.1.1'
+version '1.4.0'
 description 'A Chef cookbook for managing system services.'
 long_description ''
 maintainer 'YOUR_COMPANY_NAME'
 maintainer_email 'YOUR_EMAIL'
 license 'none'
+source_url 'https://github.com/poise/poise-service'
+issues_url 'https://github.com/poise/poise-service/issues'
 
-depends 'poise', '~> 2.6'
+depends 'poise', '~> 2.0'

@@ -17,6 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+use_inline_resources if defined?(use_inline_resources)
 
 require 'chef/mixin/shell_out'
 require 'rexml/document'
@@ -26,7 +27,7 @@ include Chef::Mixin::ShellOut
 use_inline_resources
 
 action :create do
-  if @current_resource.exists && (!(task_need_update? || @new_resource.force))
+  if @current_resource.exists && !(task_need_update? || @new_resource.force)
     Chef::Log.info "#{@new_resource} task already exists - nothing to do"
   else
     validate_user_and_password
@@ -34,13 +35,13 @@ action :create do
     validate_create_frequency_modifier
     validate_create_day
     validate_create_months
+    validate_idle_time
 
-    schedule = @new_resource.frequency == :on_logon ? 'ONLOGON' : @new_resource.frequency
-    frequency_modifier_allowed = [:minute, :hourly, :daily, :weekly, :monthly]
     options = {}
     options['F'] = '' if @new_resource.force || task_need_update?
     options['SC'] = schedule
-    options['MO'] = @new_resource.frequency_modifier if frequency_modifier_allowed.include?(@new_resource.frequency)
+    options['MO'] = @new_resource.frequency_modifier if frequency_modifier_allowed
+    options['I']  = @new_resource.idle_time unless @new_resource.idle_time.nil?
     options['SD'] = @new_resource.start_day unless @new_resource.start_day.nil?
     options['ST'] = @new_resource.start_time unless @new_resource.start_time.nil?
     options['TR'] = @new_resource.command
@@ -116,7 +117,7 @@ action :end do
     end
   else
     Chef::Log.fatal "#{@new_resource} task doesn't exist - nothing to do"
-    fail Errno::ENOENT, "#{@new_resource}: task does not exist, cannot end"
+    raise Errno::ENOENT, "#{@new_resource}: task does not exist, cannot end"
   end
 end
 
@@ -131,7 +132,7 @@ action :enable do
     end
   else
     Chef::Log.fatal "#{@new_resource} task doesn't exist - nothing to do"
-    fail Errno::ENOENT, "#{@new_resource}: task does not exist, cannot enable"
+    raise Errno::ENOENT, "#{@new_resource}: task does not exist, cannot enable"
   end
 end
 
@@ -151,11 +152,12 @@ end
 
 def load_current_resource
   @current_resource = Chef::Resource::WindowsTask.new(@new_resource.name)
-  @current_resource.task_name(@new_resource.task_name)
+  pathed_task_name = @new_resource.task_name.start_with?('\\') ? @new_resource.task_name : "\\#{@new_resource.task_name}"
 
-  pathed_task_name = @new_resource.task_name[0, 1] == '\\' ? @new_resource.task_name : @new_resource.task_name.prepend('\\')
-  task_hash = load_task_hash(@current_resource.task_name)
-  if task_hash[:TaskName] == pathed_task_name
+  @current_resource.task_name(pathed_task_name)
+  task_hash = load_task_hash(pathed_task_name)
+
+  if task_hash.respond_to?(:[]) && task_hash[:TaskName] == pathed_task_name
     @current_resource.exists = true
     @current_resource.status = :running if task_hash[:Status] == 'Running'
     if task_hash[:ScheduledTaskState] == 'Enabled'
@@ -164,25 +166,27 @@ def load_current_resource
     @current_resource.cwd(task_hash[:StartIn]) unless task_hash[:StartIn] == 'N/A'
     @current_resource.command(task_hash[:TaskToRun])
     @current_resource.user(task_hash[:RunAsUser])
-  end if task_hash.respond_to? :[]
+  end
 end
 
 private
 
+# rubocop:disable Style/StringLiteralsInInterpolation
 def run_schtasks(task_action, options = {})
   cmd = "schtasks /#{task_action} /TN \"#{@new_resource.task_name}\" "
   options.keys.each do |option|
     cmd += "/#{option} "
-    cmd += "\"#{options[option]}\" " unless options[option] == ''
+    cmd += "\"#{options[option].to_s.gsub('"', "\\\"")}\" " unless options[option] == ''
   end
   Chef::Log.debug('running: ')
   Chef::Log.debug("    #{cmd}")
   shell_out!(cmd, returns: [0])
 end
+# rubocop:enable Style/StringLiteralsInInterpolation
 
 def task_need_update?
   # gsub needed as schtasks converts single quotes to double quotes on creation
-  @current_resource.command != @new_resource.command.tr("'", "\"") ||
+  @current_resource.command != @new_resource.command.tr("'", '"') ||
     @current_resource.user != @new_resource.user
 end
 
@@ -248,7 +252,7 @@ def load_task_hash(task_name)
   task
 end
 
-SYSTEM_USERS = ['NT AUTHORITY\SYSTEM', 'SYSTEM', 'NT AUTHORITY\LOCALSERVICE', 'NT AUTHORITY\NETWORKSERVICE']
+SYSTEM_USERS = ['NT AUTHORITY\SYSTEM', 'SYSTEM', 'NT AUTHORITY\LOCALSERVICE', 'NT AUTHORITY\NETWORKSERVICE'].freeze
 
 def validate_user_and_password
   if @new_resource.user && use_password?
@@ -267,13 +271,13 @@ end
 def validate_create_day
   return unless @new_resource.day
   unless [:weekly, :monthly].include?(@new_resource.frequency)
-    fail 'day attribute is only valid for tasks that run weekly or monthly'
+    raise 'day attribute is only valid for tasks that run weekly or monthly'
   end
-  if @new_resource.day.is_a? String
+  if @new_resource.day.is_a?(String) && @new_resource.day.to_i.to_s != @new_resource.day
     days = @new_resource.day.split(',')
     days.each do |day|
       unless ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', '*'].include?(day.strip.downcase)
-        fail 'day attribute invalid.  Only valid values are: MON, TUE, WED, THU, FRI, SAT, SUN and *.  Multiple values must be separated by a comma.'
+        raise 'day attribute invalid.  Only valid values are: MON, TUE, WED, THU, FRI, SAT, SUN and *.  Multiple values must be separated by a comma.'
       end
     end
   end
@@ -282,15 +286,22 @@ end
 def validate_create_months
   return unless @new_resource.months
   unless [:monthly].include?(@new_resource.frequency)
-    fail 'months attribute is only valid for tasks that run monthly'
+    raise 'months attribute is only valid for tasks that run monthly'
   end
   if @new_resource.months.is_a? String
     months = @new_resource.months.split(',')
     months.each do |month|
       unless ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC', '*'].include?(month.strip.upcase)
-        fail 'months attribute invalid. Only valid values are: JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC and *. Multiple values must be separated by a comma.'
+        raise 'months attribute invalid. Only valid values are: JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC and *. Multiple values must be separated by a comma.'
       end
     end
+  end
+end
+
+def validate_idle_time
+  return unless @new_resource.frequency == :on_idle
+  unless @new_resource.idle_time.to_i > 0 && @new_resource.idle_time.to_i <= 999
+    raise "idle_time value #{@new_resource.idle_time} is invalid.  Valid values for :on_idle frequency are 1 - 999."
   end
 end
 
@@ -301,23 +312,23 @@ def validate_create_frequency_modifier
     case @new_resource.frequency
     when :minute
       unless @new_resource.frequency_modifier.to_i > 0 && @new_resource.frequency_modifier.to_i <= 1439
-        fail "frequency_modifier value #{@new_resource.frequency_modifier} is invalid.  Valid values for :minute frequency are 1 - 1439."
+        raise "frequency_modifier value #{@new_resource.frequency_modifier} is invalid.  Valid values for :minute frequency are 1 - 1439."
       end
     when :hourly
       unless @new_resource.frequency_modifier.to_i > 0 && @new_resource.frequency_modifier.to_i <= 23
-        fail "frequency_modifier value #{@new_resource.frequency_modifier} is invalid.  Valid values for :hourly frequency are 1 - 23."
+        raise "frequency_modifier value #{@new_resource.frequency_modifier} is invalid.  Valid values for :hourly frequency are 1 - 23."
       end
     when :daily
       unless @new_resource.frequency_modifier.to_i > 0 && @new_resource.frequency_modifier.to_i <= 365
-        fail "frequency_modifier value #{@new_resource.frequency_modifier} is invalid.  Valid values for :daily frequency are 1 - 365."
+        raise "frequency_modifier value #{@new_resource.frequency_modifier} is invalid.  Valid values for :daily frequency are 1 - 365."
       end
     when :weekly
       unless @new_resource.frequency_modifier.to_i > 0 && @new_resource.frequency_modifier.to_i <= 52
-        fail "frequency_modifier value #{@new_resource.frequency_modifier} is invalid.  Valid values for :weekly frequency are 1 - 52."
+        raise "frequency_modifier value #{@new_resource.frequency_modifier} is invalid.  Valid values for :weekly frequency are 1 - 52."
       end
     when :monthly
       unless ('1'..'12').to_a.push('FIRST', 'SECOND', 'THIRD', 'FOURTH', 'LAST', 'LASTDAY').include?(@new_resource.frequency_modifier.to_s.upcase)
-        fail "frequency_modifier value #{@new_resource.frequency_modifier} is invalid.  Valid values for :monthly frequency are 1 - 12, 'FIRST', 'SECOND', 'THIRD', 'FOURTH', 'LAST', 'LASTDAY'."
+        raise "frequency_modifier value #{@new_resource.frequency_modifier} is invalid.  Valid values for :monthly frequency are 1 - 12, 'FIRST', 'SECOND', 'THIRD', 'FOURTH', 'LAST', 'LASTDAY'."
       end
     end
   end
@@ -325,4 +336,26 @@ end
 
 def use_password?
   @use_password ||= !SYSTEM_USERS.include?(@new_resource.user.upcase)
+end
+
+def schedule
+  case @new_resource.frequency
+  when :on_logon
+    'ONLOGON'
+  when :on_idle
+    'ONIDLE'
+  else
+    @new_resource.frequency
+  end
+end
+
+def frequency_modifier_allowed
+  case @new_resource.frequency
+  when :minute, :hourly, :daily, :weekly
+    true
+  when :monthly
+    @new_resource.months.nil? || %w(FIRST SECOND THIRD FOURTH LAST LASTDAY).include?(@new_resource.frequency_modifier)
+  else
+    false
+  end
 end

@@ -1,6 +1,10 @@
+sudo: false
+branches:
+  only:
+    - master
+language: ruby
+cache: bundler
 rvm:
-  - 2.0.0
+  - 2.2
 script:
-  - bundle exec foodcritic -f any . --tags ~FC015
-  - bundle exec rspec --color --format progress
-  - bundle exec rubocop -l
+  - make travis

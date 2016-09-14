@@ -149,7 +149,7 @@ module PoiseService
         # Sigh scoping.
         template path do
           owner 'root'
-          group 'root'
+          group node['root_group']
           mode '644'
           if options['template']
             # If we have a template override, allow specifying a cookbook via
@@ -164,7 +164,7 @@ module PoiseService
             end
           else
             source default_source
-            cookbook 'poise-service'
+            cookbook self.poise_defined_in_cookbook
           end
           variables(
             command: options['command'] || new_resource.command,

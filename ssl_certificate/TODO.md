@@ -1,11 +1,12 @@
 TODO
 ====
 
-* Add more integration tests.
-* Add unit tests (rspec?).
-* why-run support.
-* Chained certificate support.
-* Generate a CSR.
-* Manage certificate expiration.
-* Add action :delete.
-* Remove the old library code.
+* [ ] Add `key_passphrase` parameter.
+* [ ] Fix CentOS `7` support.
+* [ ] Generate a CSR.
+* [ ] Manage certificate expiration.
+* [ ] Add `:delete` action.
+* [ ] why-run support.
+* [ ] Check generated certificate data in ChefSpec unit tests.
+* [ ] Add RSpec library unit tests.
+* [ ] Integrate with test coverage.

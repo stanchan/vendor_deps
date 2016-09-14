@@ -2,6 +2,55 @@ firewall Cookbook CHANGELOG
 =======================
 This file is used to list changes made in each version of the firewall cookbook.
 
+v2.5.2 (2016-06-02)
+-------------------
+* Don't issue commands when firewalld isn't active (#140)
+* Install iptables-services on CentOS >= 7 (#131)
+* Update Ruby version on Travis for listen gem
+
+v2.5.1 (2016-05-31)
+-------------------
+* Protocol guard incorrectly prevents "none" protocol type on UFW helper (#128)
+* Fix wrongly ordered conditional for converting ports to strings using port_to_s
+* Fix notify_firewall attribute crashing firewall_rule provider (#130)
+* Add warning if firewall rule opens all traffic (#132)
+* Add ipv6 attribute respect to Ubuntu iptables (#138)
+
+v2.5.0 (2016-03-08)
+-------------------
+* Don't modify parameter for port (#120)
+* Remove a reference to the wrong variable name under windows (#123)
+* Add support for mobile shell default firewall rule (#121)
+* New rubocop rules and style fixes
+* Correct a README.md example for `action :allow`
+
+v2.4.0 (2016-01-28)
+-------------------
+* Expose default iptables ruleset so that raw rules can be used in conjunction
+with rulesets for other tables (#101).
+
+v2.3.1 (2016-01-08)
+-------------------
+* Add raw rule support to the ufw firewall provider (#113).
+
+v2.3.0 (2015-12-23)
+-------------------
+* Refactor logic so that firewall rules don't add a string rule to the firewall
+when their actions run. Just run the action once on the firewall itself. This is
+designed to prevent partial application of rules (#106)
+
+* Switch to "enabled" (positive logic) instead of "disabled" (negative logic) on
+the firewall resource. It was difficult to reason with "disabled false" for some
+complicated recipes using firewall downstream. `disabled` is now deprecated.
+
+* Add proper Windows testing and serverspec tests back into this cookbook.
+
+* Fix the `port_to_s` function so it also works for Windows (#111)
+
+* Fix typo checking action instead of command in iptables helper (#112)
+
+* Remove testing ranges of ports on CentOS 5.x, as it's broken there.
+
 v2.2.0 (2015-11-02)
 -------------------
 Added permanent as default option for RHEL 7 based systems using firewall-cmd.

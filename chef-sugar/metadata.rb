@@ -1,5 +1,5 @@
 name             'chef-sugar'
-version          '3.1.1'
+version          '3.4.0'
 maintainer       'Seth Vargo'
 maintainer_email 'sethvargo@gmail.com'
 license          'Apache 2.0'

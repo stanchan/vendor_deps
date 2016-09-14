@@ -1,62 +1,67 @@
-openssh Cookbook
-================
-[![Build Status](https://secure.travis-ci.org/opscode-cookbooks/openssh.png?branch=master)](http://travis-ci.org/opscode-cookbooks/openssh)
+# openssh Cookbook
 
-Installs openssh.
+[![Build Status](https://travis-ci.org/chef-cookbooks/openssh.svg?branch=master)](https://travis-ci.org/chef-cookbooks/openssh) [![Cookbook Version](https://img.shields.io/cookbook/v/openssh.svg)](https://supermarket.chef.io/cookbooks/openssh)
 
+Installs and configures OpenSSH client and daemon.
 
-Requirements
-------------
-### Platform
+## Requirements
+
+### Platforms
+
 - Debian/Ubuntu
-- RHEL/CentOS/Scientific
+- RHEL/CentOS/Scientific/Oracle
 - Fedora
 - ArchLinux
 - FreeBSD
 
+### Chef
 
-Recipes
--------
+- Chef 12+
+
+### Cookbooks
+
+- iptables
+
+## Recipes
+
 ### default
-Selects the packages to install by package name and manages the sshd service.
+
+Installs openssh packages, manages the sshd config file, and starts/enables the sshd service.
 
 ### iptables
-Set up an iptables firewall rule to allow inbound SSH connections.
 
+Creates an iptables firewall rule to allow inbound SSH connections.
 
-Usage
------
-Ensure that the openssh packages are installed and the service is managed with `recipe[openssh]`.
+## Usage
 
+Apply the default recipe to the node's run_list to ensure that the openssh packages are installed, sshd is configured, and the service is started and enabled
 
-Attributes List
----------------
+## Attributes List
+
 The attributes list is dynamically generated, and lines up with the default openssh configs.
 
 This means anything located in [sshd_config](http://www.openbsd.org/cgi-bin/man.cgi?query=sshd_config&sektion=5) or [ssh_config](http://www.openbsd.org/cgi-bin/man.cgi?query=sshd_config&sektion=5) can be used in your node attributes.
 
-* If the option can be entered more then once, use an _Array_, otherwise, use a _String_. If the option is host-specific use a `Hash` (please see below for more details).
-* Each attribute is stored as ruby case, and converted to camel case for the config file on the fly.
-* The current default attributes match the stock `ssh_config` and `sshd_config` provided by openssh.
-* The namespace for `sshd_config` is `node['openssh']['server']`.
-* Likewise, the namespace for `ssh_config` is `node['openssh']['client']`.
-* An attribute can be an `Array`, a `Hash` or a `String`.
-* If it is an `Array`, each item in the array will get it's own line in the config file.
-* `Hash` attributes are meant to used with `ssh_config` namespace to create host-specific configurations. The keys of the `Hash` will be used as the `Host` entries and their associated entries as the configuration values.
-* All the values in openssh are commented out in the `attributes/default.rb` file for a base starting point.
-* There is one special attribute name, which is `match`. This is not included in the default template like the others. `node['openssh']['server']['match']` must be a Hash, where the key is the match pattern criteria and the value should be a Hash of normal keywords and values. The same transformations listed above apply to these keywords. See examples below.
+- If the option can be entered more then once, use an _Array_, otherwise, use a _String_. If the option is host-specific use a `Hash` (please see below for more details).
+- Each attribute is stored as ruby case, and converted to camel case for the config file on the fly.
+- The current default attributes match the stock `ssh_config` and `sshd_config` provided by openssh.
+- The namespace for `sshd_config` is `node['openssh']['server']`.
+- Likewise, the namespace for `ssh_config` is `node['openssh']['client']`.
+- An attribute can be an `Array`, a `Hash` or a `String`.
+- If it is an `Array`, each item in the array will get it's own line in the config file.
+- `Hash` attributes are meant to used with `ssh_config` namespace to create host-specific configurations. The keys of the `Hash` will be used as the `Host` entries and their associated entries as the configuration values.
+- All the values in openssh are commented out in the `attributes/default.rb` file for a base starting point.
+- There is one special attribute name, which is `match`. This is not included in the default template like the others. `node['openssh']['server']['match']` must be a Hash, where the key is the match pattern criteria and the value should be a Hash of normal keywords and values. The same transformations listed above apply to these keywords. See examples below.
 
+## Dynamic ListenAddress
 
-Dynamic ListenAddress
----------------------
 Pass in a `Hash` of interface names, and IP address type(s) to bind sshd to. This will expand to a list of IP addresses which override the default `node['openssh']['server']['listen_address']` value.
 
+## Examples and Common usage
 
-Examples and Common usage
--------------------------
 These can be mixed and matched in roles and attributes.  Please note, it is possible to get sshd into a state that it will not run.  If this is the case, you will need to login via an alternate method and debug sshd like normal.
 
-#### No Password logins
+### No Password logins
 
 This requires use of identity files to connect
 
@@ -68,7 +73,17 @@ This requires use of identity files to connect
 }
 ```
 
-#### Match
+### Change sshd Port
+
+```json
+"openssh": {
+  "server": {
+    "port": "14188"
+  }
+}
+```
+
+### Match
 
 ```json
 "openssh": {
@@ -86,7 +101,7 @@ This requires use of identity files to connect
 }
 ```
 
-#### Enable X Forwarding
+### Enable X Forwarding
 
 ```json
 "openssh": {
@@ -96,7 +111,7 @@ This requires use of identity files to connect
 }
 ```
 
-####  Bind to a specific set of address (this example actually binds to all).
+### Bind to a specific set of address (this example actually binds to all).
 
 Not to be used with `node['openssh']['listen_interfaces']`.
 
@@ -122,6 +137,7 @@ Not to be used with `node['openssh']['listen_interfaces']`.
 ```
 
 ### Host-specific configurations with hashes.
+
 You can use a `Hash` with `node['openssh']['client']` to configure different values for different hosts.
 
 ```json
@@ -164,14 +180,13 @@ StrictHostKeyChecking no
 UserKnownHostsFile /dev/null
 ```
 
+## License & Authors
 
-License & Authors
------------------
-- Author:: Adam Jacob <adam@opscode.com>
+**Author:** Cookbook Engineering Team ([cookbooks@chef.io](mailto:cookbooks@chef.io))
 
-```text
-Copyright:: 2008-2009, Opscode, Inc
+**Copyright:** 2008-2016, Chef Software, Inc.
 
+```
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at

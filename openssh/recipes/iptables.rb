@@ -2,7 +2,7 @@
 # Cookbook Name:: openssh
 # Recipe:: iptables
 #
-# Copyright 2013, Opscode, Inc.
+# Copyright 2013-2016, Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,4 +19,12 @@
 
 include_recipe 'iptables::default'
 
-iptables_rule 'port_ssh'
+sshd_port = if node['openssh'].attribute?('server') && node['openssh']['server'].attribute?('port')
+              node['openssh']['server']['port']
+            else
+              22
+            end
+
+iptables_rule 'port_ssh' do
+  variables port: sshd_port
+end

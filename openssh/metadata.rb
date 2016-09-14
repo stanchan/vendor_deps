@@ -1,21 +1,21 @@
-name              'openssh'
-maintainer        'Opscode, Inc.'
-maintainer_email  'cookbooks@opscode.com'
-license           'Apache 2.0'
-description       'Installs openssh'
-version           '1.3.4'
+name 'openssh'
+maintainer 'Chef Software, Inc.'
+maintainer_email 'cookbooks@chef.io'
+license 'Apache 2.0'
+description 'Installs and configures OpenSSH client and daemon'
+long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
+version '2.0.0'
 
 recipe 'openssh', 'Installs openssh'
 recipe 'openssh::iptables', 'Set up iptables to allow SSH inbound'
 
-supports 'arch'
-supports 'centos'
-supports 'debian'
-supports 'fedora'
-supports 'freebsd'
-supports 'redhat'
-supports 'scientific'
-supports 'suse'
-supports 'ubuntu'
+%w(amazon arch centos fedora freebsd oracle redhat scientific smartos suse ubuntu zlinux).each do |os|
+  supports os
+end
 
-depends 'iptables'
+depends 'iptables', '>= 1.0'
+
+source_url 'https://github.com/chef-cookbooks/openssh' if respond_to?(:source_url)
+issues_url 'https://github.com/chef-cookbooks/openssh/issues' if respond_to?(:issues_url)
+
+chef_version '>= 12.0' if respond_to?(:chef_version)

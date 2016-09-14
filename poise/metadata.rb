@@ -1,7 +1,10 @@
 name 'poise'
-version '2.6.0'
+version '2.7.1'
 description 'Helpers for writing extensible Chef cookbooks.'
 long_description ''
 maintainer 'YOUR_COMPANY_NAME'
 maintainer_email 'YOUR_EMAIL'
 license 'none'
+
+source_url 'https://github.com/poise/poise'
+issues_url 'https://github.com/poise/poise/issues'

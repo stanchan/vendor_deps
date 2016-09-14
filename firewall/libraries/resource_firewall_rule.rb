@@ -16,9 +16,7 @@ class Chef
     attribute(:protocol, kind_of: [Integer, Symbol], default: :tcp,
                          callbacks: { 'must be either :tcp, :udp, :icmp, :\'ipv6-icmp\', :icmpv6, :none, or a valid IP protocol number' => lambda do |p|
                            !!(p.to_s =~ /(udp|tcp|icmp|icmpv6|ipv6-icmp|none)/ || (p.to_s =~ /^\d+$/ && p.between?(0, 142)))
-                         end
-      }
-             )
+                         end })
     attribute(:direction, kind_of: Symbol, equal_to: [:in, :out, :pre, :post], default: :in)
     attribute(:logging, kind_of: Symbol, equal_to: [:connections, :packets])
 
@@ -45,5 +43,9 @@ class Chef
 
     # for when you just want to pass a raw rule
     attribute(:raw, kind_of: String)
+
+    # do you want this rule to notify the firewall to recalculate
+    # (and potentially reapply) the firewall_rule(s) it finds?
+    attribute(:notify_firewall, kind_of: [TrueClass, FalseClass], default: true)
   end
 end

@@ -38,7 +38,7 @@ By default, Red Hat & CentOS >= 7.0 chooses firewalld. To switch to iptables, se
 default['firewall']['redhat7_iptables'] = true
 ```
 
-# Read this first
+# Considerations that apply to all firewall providers and resources
 
 This cookbook comes with two resources, firewall and firewall rule. The typical usage scenario is as follows:
 
@@ -50,6 +50,35 @@ This cookbook comes with two resources, firewall and firewall rule. The typical 
 
 There is a fundamental mismatch between the idea of a chef action and the action that should be taken on a firewall rule. For this reason, the chef action for a firewall_rule may be `:nothing` (the rule should not be present in the firewall) or `:create` (the rule should be present in the firewall), but the action taken on a packet in a firewall (`DROP`, `ACCEPT`, etc) is denoted as a `command` parameter on the `firewall_rule` resource.
 
+# iptables considerations
+
+If you need to use a table other than `*filter`, the best way to do so is like so:
+```
+node.default['firewall']['iptables']['defaults'][:ruleset] = {
+  '*filter' => 1,
+  ':INPUT DROP' => 2,
+  ':FORWARD DROP' => 3,
+  ':OUTPUT ACCEPT' => 4,
+  'COMMIT_FILTER' => 100,
+  '*nat' => 101,
+  ':PREROUTING DROP' => 102,
+  ':POSTROUTING DROP' => 103,
+  ':OUTPUT ACCEPT' => 104,
+  'COMMIT_NAT' => 200
+}
+```
+
+Then it's trivial to add additional rules to the `*nat` table using the raw parameter:
+```
+firewall_rule "postroute" do
+  raw "-A POSTROUTING -o eth1 -p tcp -d 172.28.128.21 -j SNAT --to-source 172.28.128.6"
+  position 150
+end
+```
+
+Note that any line starting with `COMMIT` will become just `COMMIT`, as hash
+keys must be unique but we need multiple commit lines.
+
 # Recipes
 
 ### default
@@ -58,6 +87,7 @@ The default recipe creates a firewall resource with action install, and if `node
 # Attributes
 
 * `default['firewall']['allow_ssh'] = false`, set true to open port 22 for SSH when the default recipe runs
+* `default['firewall']['allow_mosh'] = false`, set to true to open UDP ports 60000 - 61000 for [Mosh][0] when the default recipe runs
 * `default['firewall']['allow_winrm'] = false`, set true to open port 5989 for WinRM when the default recipe runs
 
 * `default['firewall']['ubuntu_iptables'] = false`, set to true to use iptables on Ubuntu / Debian when using the default recipe
@@ -197,6 +227,12 @@ firewall_rule 'vrrp' do
   command      :allow
 end
 
+# can use :raw command with UFW provider for VRRP
+firewall_rule "VRRP" do
+  command   :allow
+  raw "allow to 224.0.0.18"
+end
+
 # open UDP ports 60000..61000 for mobile shell (mosh.mit.edu), note
 # that the protocol attribute is required when using port_range
 firewall_rule 'mosh' do
@@ -210,11 +246,11 @@ end
 firewall_rule 'http/https' do
   protocol :tcp
   port     [80, 443]
-  action   :allow
+  command   :allow
 end
 
 firewall 'default' do
-  disabled true
+  enabled false
   action :nothing
 end
 ```
@@ -286,3 +322,5 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ```
+
+[0]: https://mosh.mit.edu/

@@ -1,21 +1,30 @@
-yum-mysql-community Cookbook
-============
+# yum-mysql-community Cookbook
 
-The yum-mysql-community cookbook takes over management of the default
-repositoryids shipped with epel-release. It allows attribute
-manipulation of `mysql-connectors-community`, `mysql56-community`, and
-`mysql57-community-dmr`.
+[![Build Status](https://travis-ci.org/chef-cookbooks/yum-mysql-community.svg?branch=master)](http://travis-ci.org/chef-cookbooks/yum-mysql-community) [![Cookbook Version](https://img.shields.io/cookbook/v/yum-mysql-community.svg)](https://supermarket.chef.io/cookbooks/yum-mysql-community)
 
-Requirements
-------------
-* Chef 11 or higher
-* yum cookbook version 3.0.0 or higher
+The yum-mysql-community cookbook takes over management of the default repository ids shipped with epel-release. It allows attribute manipulation of `mysql-connectors-community`, `mysql56-community`, and `mysql57-community-dmr`.
 
-Attributes
-----------
+## Requirements
+
+### Platforms
+
+- RHEL/CentOS and derivatives
+- Fedora
+
+### Chef
+
+- Chef 12+
+
+### Cookbooks
+
+- yum version 3.2+
+- yum-epel
+
+## Attributes
+
 The following attributes are set by default
 
-``` ruby
+```ruby
 default['yum']['mysql-connectors-community']['repositoryid'] = 'mysql-connectors-community'
 default['yum']['mysql-connectors-community']['description'] = 'MySQL Connectors Community'
 default['yum']['mysql-connectors-community']['baseurl'] = 'http://repo.mysql.com/yum/mysql-connectors-community/el/$releasever/$basearch/'
@@ -25,7 +34,7 @@ default['yum']['mysql-connectors-community']['gpgcheck'] = true
 default['yum']['mysql-connectors-community']['enabled'] = true
 ```
 
-``` ruby
+```ruby
 default['yum']['mysql56-community']['repositoryid'] = 'mysql56-community'
 default['yum']['mysql56-community']['description'] = 'MySQL 5.6 Community Server'
 default['yum']['mysql56-community']['baseurl'] = 'http://repo.mysql.com/yum/mysql56-community/el/$releasever/$basearch/'
@@ -35,7 +44,7 @@ default['yum']['mysql56-community']['gpgcheck'] = true
 default['yum']['mysql56-community']['enabled'] = true
 ```
 
-``` ruby
+```ruby
 default['yum']['mysql57-community-dmr']['repositoryid'] = 'mysql57-community-dmr'
 default['yum']['mysql57-community-dmr']['description'] = 'MySQL 5.7 Community Server Development Milestone Release'
 default['yum']['mysql57-community-dmr']['baseurl'] = 'http://repo.mysql.com/yum/mysql56-community/el/$releasever/$basearch/'
@@ -45,10 +54,10 @@ default['yum']['mysql57-community-dmr']['gpgcheck'] = true
 default['yum']['mysql57-community-dmr']['enabled'] = true
 ```
 
-Recipes
--------
-* mysql55 - Sets up the mysql56-community repository on supported
-  platforms
+## Recipes
+
+- mysql55 - Sets up the mysql56-community repository on supported
+- platforms
 
 ```ruby
   yum_repository 'mysql55-community' do
@@ -59,8 +68,8 @@ Recipes
   end
 ```
 
-* mysql56 - Sets up the mysql56-community repository on supported
-  platforms
+- mysql56 - Sets up the mysql56-community repository on supported
+- platforms
 
 ```ruby
   yum_repository 'mysql56-community' do
@@ -71,16 +80,14 @@ Recipes
   end
 ```
 
+- connectors - Sets up the mysql-connectors-community repository on supported
+- platforms
 
-* connectors - Sets up the mysql-connectors-community repository on supported
-  platforms
+## Usage Example
 
-
-Usage Example
--------------
 To disable the epel repository through a Role or Environment definition
 
-```
+```ruby
 default_attributes(
   :yum => {
     :mysql57-community-dmr => {
@@ -92,19 +99,16 @@ default_attributes(
  )
 ```
 
-Uncommonly used repositoryids are not managed by default. This is
-speeds up integration testing pipelines by avoiding yum-cache builds
-that nobody cares about. To enable the epel-testing repository with a
-wrapper cookbook, place the following in a recipe:
+Uncommonly used repositoryids are not managed by default. This is speeds up integration testing pipelines by avoiding yum-cache builds that nobody cares about. To enable the epel-testing repository with a wrapper cookbook, place the following in a recipe:
 
-```
+```ruby
 node.default['yum']['mysql57-community-dmr']['enabled'] = true
 node.default['yum']['mysql57-community-dmr']['managed'] = true
 include_recipe 'mysql57-community-dmr'
 ```
 
-More Examples
--------------
+## More Examples
+
 Point the mysql56-community repositories at an internally hosted server.
 
 ```
@@ -116,13 +120,13 @@ node.default['yum']['mysql56-community']['sslverify'] = false
 include_recipe 'mysql56-community'
 ```
 
-License & Authors
------------------
-- Author:: Sean OMeara (<sean@chef.io>)
+## License & Authors
 
-```text
-Copyright:: 2011-2015, Chef Software, Inc.
+**Author:** Cookbook Engineering Team ([cookbooks@chef.io](mailto:cookbooks@chef.io))
 
+**Copyright:** 2011-2016, Chef Software, Inc.
+
+```
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at

@@ -9,19 +9,20 @@ end
 
 <% end -%>
 <% @chef_config.keys.sort.each do |option| -%>
-  <% next if %w{ node_name environment exception_handlers report_handlers start_handlers http_proxy https_proxy no_proxy }.include?(option) -%>
+  <% next if %w{ node_name exception_handlers report_handlers start_handlers http_proxy https_proxy no_proxy }.include?(option) -%>
   <% case option -%>
   <% when 'log_level', 'ssl_verify_mode', 'audit_mode' -%>
 <%= option %> <%= @chef_config[option].gsub(/^:/, '').to_sym.inspect %>
   <% when 'log_location' -%>
-<%= option %> <%= @chef_config[option] %>
+  <%   if @chef_config[option].instance_of? String -%>
+<%= option %> <%= @chef_config[option].inspect %>
+  <%   else -%>
+<%= option %> <%= @chef_config[option] -%>
+  <%   end -%>
   <% else -%>
 <%= option %> <%= @chef_config[option].inspect %>
   <% end -%>
 <% end -%>
-<% if @chef_config['environment'] -%>
-environment <%= @chef_config['environment'].inspect %>
-<%end -%>
 <% if @chef_config['node_name'] -%>
 node_name <%= @chef_config['node_name'].inspect %>
 <% else -%>
@@ -40,13 +41,14 @@ no_proxy "<%= node["chef_client"]["config"]["no_proxy"] %>"
 <% end -%>
 
 <% if node.attribute?("ohai") && node["ohai"].attribute?("plugin_path") -%>
-
-Ohai::Config[:plugin_path] << "<%= node["ohai"]["plugin_path"] %>"
+<%= @ohai_new_config_syntax? 'ohai.plugin_path' : 'Ohai::Config[:plugin_path]' %> << "<%= node["ohai"]["plugin_path"] %>"
 <% end -%>
 <% unless @ohai_disabled_plugins.empty? -%>
-Ohai::Config[:disabled_plugins] = [<%= @ohai_disabled_plugins.map { |k| k.match(/:/) ? k.gsub(/^:/, '').to_sym.inspect : k.inspect }.join(",") %>]
-
+<%= @ohai_new_config_syntax? 'ohai.disabled_plugins' : 'Ohai::Config[:disabled_plugins]' %> = [<%= @ohai_disabled_plugins.map { |k| k.match(/:/) ? k.gsub(/^:/, '').to_sym.inspect : k.inspect }.join(",") %>]
 <% end -%>
+
+# Do not crash if a handler is missing / not installed yet
+begin
 <% unless @start_handlers.nil? || @start_handlers.empty?-%>
   <% @start_handlers.each do |handler| -%>
 start_handlers << <%= handler["class"] %>.new(<%= handler["arguments"].join(',') %>)
@@ -62,7 +64,16 @@ report_handlers << <%= handler["class"] %>.new(<%= handler["arguments"].join(','
 exception_handlers << <%= handler["class"] %>.new(<%= handler["arguments"].join(',') %>)
   <% end -%>
 <% end -%>
-
-Dir.glob(File.join(<%= node['chef_client']['conf_dir'].inspect %>, "client.d", "*.rb")).each do |conf|
-  Chef::Config.from_file(conf)
+rescue NameError => e
+  Chef::Log.error e
 end
+
+<% if Gem::Version.new(Chef::VERSION) < Gem::Version.new('12.8') -%>
+Dir.glob(File.join(<%= node['chef_client']['conf_dir'].inspect %>, "client.d", "*.rb")).each do |conf|
+  <% if Gem::Version.new(Chef::VERSION) < Gem::Version.new('12.4.0') -%>
+  Chef::Config.from_file(conf)
+  <% else -%>
+  ChefConfig::Config.from_file(conf)
+  <% end -%>
+end
+<% end -%>
