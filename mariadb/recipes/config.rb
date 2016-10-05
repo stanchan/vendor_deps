@@ -48,7 +48,7 @@ if node['mariadb']['innodb']['bps_percentage_memory']
     (
       node['mariadb']['innodb']['buffer_pool_size'].to_f *
       (node['memory']['total'][0..-3].to_i / 1024)
-  ).round).to_s + 'M'
+    ).round).to_s + 'M'
 else
   innodb_options['innodb_buffer_pool_size'] = \
     node['mariadb']['innodb']['buffer_pool_size']
@@ -73,6 +73,7 @@ mariadb_configuration 'innodb' do
 end
 
 replication_opts = {}
+
 replication_opts['log_bin'] = node['mariadb']['replication']['log_bin']
 replication_opts['log_bin_index']    = \
   node['mariadb']['replication']['log_bin_index']
@@ -83,10 +84,8 @@ replication_opts['max_binlog_size']  = \
 unless node['mariadb']['replication']['server_id'].empty?
   replication_opts['server-id'] = node['mariadb']['replication']['server_id']
 end
-if node['mariadb']['replication'].key?('options')
-  node['mariadb']['replication']['options'].each do |key, value|
-    replication_opts[key] = value
-  end
+node['mariadb']['replication']['options'].each do |key, value|
+  replication_opts[key] = value
 end
 
 mariadb_configuration 'replication' do

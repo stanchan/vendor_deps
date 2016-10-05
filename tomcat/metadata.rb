@@ -1,20 +1,18 @@
 name             'tomcat'
-maintainer       'Opscode, Inc.'
-maintainer_email 'cookbooks@opscode.com'
+maintainer       'Chef Software, Inc.'
+maintainer_email 'cookbooks@chef.io'
 license          'Apache 2.0'
-description      'Installs/Configures tomcat'
+description      'Installs Apache Tomcat and manages the service'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version          '0.17.0'
+version          '2.3.2'
 
-depends 'java'
-depends 'openssl'
+depends 'compat_resource', '>= 12.14'
 
-supports 'debian'
-supports 'ubuntu'
-supports 'centos'
-supports 'redhat'
-supports 'amazon'
-supports 'scientific'
+%w(ubuntu debian redhat centos suse opensuse opensuseleap scientific oracle amazon zlinux).each do |os|
+  supports os
+end
 
-recipe 'tomcat::default', 'Installs and configures Tomcat'
-recipe 'tomcat::users', 'Setup users and roles for Tomcat'
+source_url 'https://github.com/chef-cookbooks/tomcat'
+issues_url 'https://github.com/chef-cookbooks/tomcat/issues'
+
+chef_version '>= 12.1'

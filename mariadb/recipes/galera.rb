@@ -37,7 +37,7 @@ if node['mariadb']['galera']['wsrep_sst_method'] == 'rsync'
     action :install
   end
 else
-  if node['mariadb']['galera']['wsrep_sst_method'] == 'xtrabackup'
+  if node['mariadb']['galera']['wsrep_sst_method'] =~ /^xtrabackup(-v2)?/
     package 'percona-xtrabackup' do
       action :install
     end
@@ -52,7 +52,12 @@ include_recipe "#{cookbook_name}::config"
 
 galera_cluster_nodes = []
 if !node['mariadb'].attribute?('rspec') && Chef::Config[:solo]
-  Chef::Log.warn('This recipe uses search. Chef Solo does not support search.')
+  if node['mariadb']['galera']['cluster_nodes'].empty?
+    Chef::Log.warn('By default this recipe uses search (unsupported by Chef Solo).' \
+                   ' Nodes may manually be configured as attributes.')
+  else
+    galera_cluster_nodes = node['mariadb']['galera']['cluster_nodes']
+  end
 else
   if node['mariadb']['galera']['cluster_search_query'].empty?
     galera_cluster_nodes = search(
@@ -116,17 +121,28 @@ if platform?('debian', 'ubuntu')
     mode '0600'
   end
 
+  grants_command = 'mysql -r -B -N -u root '
+
+  if node['mariadb']['server_root_password'].is_a?(String)
+    grants_command += '--password=\'' + \
+                      node['mariadb']['server_root_password'] + '\' '
+  end
+
+  grants_command += '-e "GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ' \
+                    'DROP, RELOAD, SHUTDOWN, PROCESS, FILE, REFERENCES, ' \
+                    'INDEX, ALTER, SHOW DATABASES, SUPER, CREATE TEMPORARY ' \
+                    'TABLES, LOCK TABLES, EXECUTE, REPLICATION SLAVE, ' \
+                    'REPLICATION CLIENT, CREATE VIEW, SHOW VIEW, CREATE ' \
+                    'ROUTINE, ALTER ROUTINE, CREATE USER, EVENT, TRIGGER ON ' \
+                    ' *.* TO \'' + node['mariadb']['debian']['user'] + \
+                    '\'@\'' + node['mariadb']['debian']['host'] + '\' ' \
+                    'IDENTIFIED BY \'' + \
+                    node['mariadb']['debian']['password'] + '\' WITH GRANT ' \
+                    'OPTION"'
+
   execute 'correct-debian-grants' do
     # Add sensitive true when foodcritic #233 fixed
-    command 'mysql -r -B -N -e "GRANT SELECT, INSERT, UPDATE, DELETE, '\
-      'CREATE, DROP, RELOAD, SHUTDOWN, PROCESS, FILE, REFERENCES, INDEX, '\
-      'ALTER, SHOW DATABASES, SUPER, CREATE TEMPORARY TABLES, '\
-      'LOCK TABLES, EXECUTE, REPLICATION SLAVE, REPLICATION CLIENT, '\
-      'CREATE VIEW, SHOW VIEW, CREATE ROUTINE, ALTER ROUTINE, '\
-      "CREATE USER, EVENT, TRIGGER ON *.* TO '" + \
-      node['mariadb']['debian']['user'] + \
-      "'@'" + node['mariadb']['debian']['host'] + "' IDENTIFIED BY '" + \
-      node['mariadb']['debian']['password'] + "' WITH GRANT OPTION\""
+    command grants_command
     action :run
     only_if do
       cmd = Mixlib::ShellOut.new("/usr/bin/mysql --user=\"" + \
@@ -139,3 +155,25 @@ if platform?('debian', 'ubuntu')
     ignore_failure true
   end
 end
+
+#
+#  NOTE: You cannot use the following code to restart Mariadb when in Galera mode.
+#        When your SST is longer than a chef run...
+#        ==> chef-client try to restart the service each time it run <==
+#
+
+# restart the service if needed
+# workaround idea from https://github.com/stissot
+#
+# Chef::Resource::Execute.send(:include, MariaDB::Helper)
+# execute 'mariadb-service-restart-needed' do
+#   command 'true'
+#   only_if do
+#     mariadb_service_restart_required?(
+#       node['mariadb']['mysqld']['bind-address'],
+#       node['mariadb']['mysqld']['port'],
+#       node['mariadb']['mysqld']['socket']
+#     )
+#   end
+#   notifies :restart, 'service[mysql]', :immediately
+# end

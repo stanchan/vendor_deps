@@ -12,7 +12,7 @@ if node['mariadb']['use_default_repository']
 
     apt_repository "mariadb-#{node['mariadb']['install']['version']}" do
       uri 'http://' + node['mariadb']['apt_repository']['base_url'] + '/' + \
-        node['mariadb']['install']['version'] + '/' +  node['platform']
+        node['mariadb']['install']['version'] + '/' + node['platform']
       distribution node['lsb']['codename']
       components ['main']
       keyserver 'hkp://keyserver.ubuntu.com:80'
@@ -21,7 +21,7 @@ if node['mariadb']['use_default_repository']
   when 'yum'
     include_recipe 'yum::default'
 
-    if node['platform'] == 'redhat'
+    if node['platform'] == 'redhat' || node['platform'] == 'scientific'
       target_platform = "rhel#{node['platform_version'].to_i}"
     else
       target_platform = "#{node['platform']}#{node['platform_version'].to_i}"
@@ -35,7 +35,7 @@ if node['mariadb']['use_default_repository']
     end
 
     case node['platform']
-    when 'redhat', 'centos'
+    when 'redhat', 'centos', 'scientific'
       include_recipe 'yum-epel::default'
     end
   end

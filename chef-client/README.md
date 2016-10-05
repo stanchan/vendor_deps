@@ -8,35 +8,20 @@ This cookbook is used to configure a system as a Chef Client.
 
 ### Platforms
 
-The following platforms are tested directly under test-kitchen; see .kitchen.yml and TESTING.md for details.
-
-- Ubuntu 12.04, 14.04
-- CentOS 5.11, 6.7, 7.2
-- Debian 7.9, 8.2
-- Fedora 22, 23
-- FreeBSD 9.3, 10.2
-- openSUSE 13.2
-- Windows 2008 R2 / Windows 2012 R2
-
-The following platforms are known to work:
-
-- Debian family (Debian, Ubuntu etc)
-- Red Hat family (Redhat, CentOS, Oracle etc)
-- Fedora family
-- SUSE distributions (OpenSUSE, SLES, etc)
-- ArchLinux
-- FreeBSD
+- AIX 6+
+- Debian 7+
+- Fedora
+- FreeBSD 9+
 - Mac OS X
-- Mac OS X Server
-- Microsoft Windows (7, 8, 2008, 2008 R2, 2012, 2012 R2)
-- AIX (6.1, 7.1)
-- openSUSE Leap / SUSE Linux Enterprises
-
-Other platforms may work with or without modification. Most notably, attribute modification may be required.
+- openSUSE 13+
+- RHEL 5+
+- Solaris 10+
+- Ubuntu 12.04+
+- Windows 2008 R2+
 
 ### Chef
 
-- Chef 11.6.0+
+- Chef 12.1+
 
 ### Dependent Cookbooks
 
@@ -73,7 +58,7 @@ The following attributes affect the behavior of the chef-client program when run
 - `node['chef_client']['reload_config']` - If true, reload Chef config of current Chef run when `client.rb` template changes (defaults to true)
 - `node['chef_client']['daemon_options']` - An array of additional options to pass to the chef-client service, empty by default, and must be an array if specified.
 - `node['chef_client']['task']['frequency']` - Frequency with which to run the `chef-client` scheduled task (e.g., `'hourly'`, `'daily'`, etc.) Default is `'minute'`.
-- `node['chef_client']['task']['frequency_modifier']` - Numeric value to go with the scheduled task frequency. Default is the value of
+- `node['chef_client']['task']['frequency_modifier']` - Numeric value to go with the scheduled task frequency. Default is `node['chef_client']['interval'].to_i / 60`
 - `node['chef_client']['task']['start_time']` - The start time for the task in `HH:mm` format. If the `frequency` is `minute` default start time will be `Time.now` plus the `frequency_modifier` number of minutes.
 - `node['chef_client']['task']['user']` - The user the scheduled task will run as, defaults to `'SYSTEM'`.
 - `node['chef_client']['task']['password']` - The password for the user the scheduled task will run as, defaults to `nil` because the default user, `'SYSTEM'`, does not need a password.
@@ -112,10 +97,6 @@ The following attributes should be set using `['chef_client']['config']`. Settin
 - `node['chef_client']['config']['cache_options']['path']`.
 - `node['chef_client']['verbose_logging']` - Not set anymore, we recommend using the default log level and output formatting in Chef 11+. This can still be set using `node['chef_client']['config']['verbose_logging']` if required.
 
-The following attributes are deprecated entirely.
-
-- `node['chef_client']['checksum_cache_skip_expires']` - No longer required in Chef 11+.
-
 ## Recipes
 
 This section describes the recipes in the cookbook and how to use them in your environment.
@@ -153,7 +134,7 @@ Use this recipe on systems that should have a `chef-client` daemon running, such
 
 ### default
 
-Includes the `chef-client::service` recipe by default.
+Includes the `chef-client::service` recipe by default on *nix platforms and the task recipe for Windows hosts.
 
 ### delete_validation
 
@@ -233,7 +214,6 @@ include_recipe 'chef-client::config'
 Then create `files/default/myconfig.rb` with the configuration content you want. For example, if you wish to create a configuration to log to syslog:
 
 ```ruby
-require 'rubygems'
 require 'syslog-logger'
 require 'syslog'
 

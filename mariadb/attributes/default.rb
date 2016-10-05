@@ -21,7 +21,11 @@ end
 default['mariadb']['forbid_remote_root']                = true
 default['mariadb']['server_root_password']              = ''
 default['mariadb']['allow_root_pass_change']            = false
-default['mariadb']['mysqld']['service_name']            = 'mysql'
+if node['platform'] == 'centos'
+  default['mariadb']['mysqld']['service_name']          = 'mariadb'
+else
+  default['mariadb']['mysqld']['service_name']            = 'mysql'
+end
 default['mariadb']['mysqld']['user']                    = 'mysql'
 default['mariadb']['mysqld']['port']                    = '3306'
 default['mariadb']['mysqld']['basedir']                 = '/usr'
@@ -82,6 +86,9 @@ default['mariadb']['galera']['wsrep_provider']     = \
   '/usr/lib/galera/libgalera_smm.so'
 default['mariadb']['galera']['options']            = {}
 
+# Node format: [{ :name => "mariadb_1", fqdn: "33.33.33.11"}]
+default['mariadb']['galera']['cluster_nodes']      = []
+
 #
 # Replication default configuration
 #
@@ -92,6 +99,7 @@ default['mariadb']['replication']['log_bin_index']    = \
   '/var/log/mysql/mariadb-bin.index'
 default['mariadb']['replication']['expire_logs_days'] = '10'
 default['mariadb']['replication']['max_binlog_size']  = '100M'
+default['mariadb']['replication']['options']          = {}
 
 #
 # mysqldump default configuration

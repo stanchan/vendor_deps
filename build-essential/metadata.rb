@@ -4,7 +4,7 @@ maintainer_email  'cookbooks@chef.io'
 license           'Apache 2.0'
 description       'Installs C compiler / build tools'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version           '6.0.5'
+version           '6.0.6'
 recipe            'build-essential', 'Installs packages required for compiling C software from source.'
 
 supports 'amazon'
@@ -33,4 +33,4 @@ depends 'compat_resource', '>= 12.14'
 source_url 'https://github.com/chef-cookbooks/build-essential'
 issues_url 'https://github.com/chef-cookbooks/build-essential/issues'
 
-chef_version '>= 12.1' if respond_to?(:chef_version)
+chef_version '>= 12.1'
